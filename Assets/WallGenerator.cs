@@ -14,48 +14,52 @@ public class WallGenerator : MonoBehaviour
 
     public GameObject wallPrefab;
     //ゴールへの経路
-    public bool[,] wayToGoal = new bool[100, 100];
+    public bool[,] wayToGoal = new bool[10, 10];
     //横向きの壁
-    public bool[,] wallYoko = new bool[100, 101];
+    public bool[,] wallYoko = new bool[10, 11];
     //縦向きの壁
-    public bool[,] wallTate = new bool[101, 100];
+    public bool[,] wallTate = new bool[11, 10];
     //スタート位置
     private int startPos;
     //ゴール位置
     private int goalPos;
     //壁配置濃度(0～100)[%]
-    private int wallDens = 50;
+    private int wallDens = 40;
     //player
     private GameObject player;
 
     // Start is called before the first frame update
     void Start()
     {
-        startPos = Random.Range(0, 100);
-        //goalPos = Random.Range(0, 100);
+        startPos = Random.Range(0, 10);
+        //goalPos = Random.Range(0, 10);
         wayToGoal[startPos, 0] = true;
         int i = startPos;
         int j = 0;
-        
+        int count = 0;
+
         //ゴールへの道の設定
-        while(j < 100)
-        {   int directNo = Random.Range(0, 4);
+        while(j < 10)
+        {   
+            count += 1;
+
+            int directNo = Random.Range(0, 4);
             switch (directNo)
             {
                 case 0:
-                    if (i < 99) { i += 1; }
+                    if (i < 9 && wayToGoal[i+1,j] == false) { i += 1; }
                     break;
                 case 1:
-                    if (i > 0) { i -= 1; }
+                    if (i > 0 && wayToGoal[i-1,j] == false) { i -= 1; }
                     break;
                 case 2:
-                    j += 1;
+                    if((j < 9 && wayToGoal[i,j+1] == false)||j == 9) {j += 1;}
                     break;
                 case 3:
-                    if (j > 0) { j -= 1; }
+                    if (j > 0 && wayToGoal[i,j-1]) { j -= 1; }
                     break;
             }
-            if(j < 100 )
+            if(j < 10 )
             {
                 wayToGoal[i, j] = true;
             }
@@ -63,15 +67,33 @@ public class WallGenerator : MonoBehaviour
             {
                 goalPos = i;
             }
+
+
+            //やり直し
+            if(count > 20)
+            {
+                for(int p = 0; p< 10; p++)
+                {
+                    for (int q = 0; q < 10; q++)
+                    {
+                        wayToGoal[p, q] = false;
+                    }
+                }
+                i = startPos;
+                j = 0;
+                wayToGoal[startPos, 0] = true;
+                count = 0;
+            }
+
         }
 
         
         #region 横壁の分布決定
-        for (int p = 0; p < 100; p ++)
+        for (int p = 0; p < 10; p ++)
         {
-            for(int q = 0; q < 101; q++)
+            for(int q = 0; q < 11; q++)
             {
-                if(q == 0 || q == 100)
+                if(q == 0 || q == 10)
                 {
                     //外周の壁
                     wallYoko[p, q] = true;
@@ -89,15 +111,15 @@ public class WallGenerator : MonoBehaviour
             }
         }
         wallYoko[startPos, 0] = false;
-        wallYoko[goalPos, 100] = false;
+        wallYoko[goalPos, 10] = false;
         #endregion
 
         #region 縦壁の分布決定
-        for (int p = 0; p < 101; p++)
+        for (int p = 0; p < 11; p++)
         {
-            for (int q = 0; q < 100; q++)
+            for (int q = 0; q < 10; q++)
             {
-                if (p == 0 || p == 100)
+                if (p == 0 || p == 10)
                 {
                     //外周の壁
                     wallTate[p, q] = true;
@@ -117,9 +139,9 @@ public class WallGenerator : MonoBehaviour
         #endregion
 
         #region 壁の生成
-        for (int p = 0; p < 100; p++)
+        for (int p = 0; p < 10; p++)
         {
-            for (int q = 0; q < 101; q++)
+            for (int q = 0; q < 11; q++)
             {
                 if (wallYoko[p, q])
                 {

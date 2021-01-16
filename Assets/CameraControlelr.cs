@@ -13,7 +13,7 @@ public class CameraControlelr : MonoBehaviour
     void Start()
     {
         //Unityちゃんのオブジェクトを取得
-        this.unitychan = GameObject.Find("unitychan");
+        this.unitychan = GameObject.Find("player");
         
         //Unityちゃんとカメラの位置（z座標）の差を求める
         this.difference = unitychan.transform.position.z - this.transform.position.z;

@@ -20,9 +20,6 @@ public class UnityChanController : MonoBehaviour
     {
         //アニメータコンポーネントを取得
         this.myAnimator = GetComponent<Animator>();
-
-        
-
         //Rigidbodyコンポーネントを取得（追加）
         this.myRigidbody = GetComponent<Rigidbody>();
     }
@@ -60,7 +57,7 @@ public class UnityChanController : MonoBehaviour
             isRunning = false;
         }
 
-        //Unityちゃんに速度を与える
+        //playerに速度を与える
         if(isRunning)
         {
             this.myRigidbody.velocity = runSpeed * runDirection;
@@ -70,9 +67,29 @@ public class UnityChanController : MonoBehaviour
         else
         {
             this.myRigidbody.velocity = Vector3.zero;
-            //走るアニメーションを開始
+            //走るアニメーションを終了
             this.myAnimator.SetFloat("Speed", 0);
         }
-        
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        //enemyの視界に入ったら
+        if(other.tag == "view")
+        {
+            //enemyのisChasingをtrueにする
+            GameObject oya = other.transform.parent.gameObject;
+            oya.GetComponent<EnemyController>().isChasing = true;
+        }
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        //enemyの視界から出たら
+        if (other.tag == "view")
+        {
+            //enemyのisChasingをfalseにする
+            GameObject oya = other.transform.parent.gameObject;
+            oya.GetComponent<EnemyController>().isChasing = false;
+        }
     }
 }

@@ -7,10 +7,6 @@ public class UnityChanController : MonoBehaviour
 {
     //アニメーションするためのコンポーネントを入れる
     private Animator myAnimator;
-    //Unityちゃんを移動させるコンポーネントを入れる（追加）
-    private Rigidbody myRigidbody;
-    //速度の大きさ
-    private float runSpeed = 5;
     //updateごとの移動量
     private float runSpeedByUpdate = 0.1f;
     //速度の向き
@@ -23,17 +19,12 @@ public class UnityChanController : MonoBehaviour
     {
         //アニメータコンポーネントを取得
         this.myAnimator = GetComponent<Animator>();
-        //Rigidbodyコンポーネントを取得（追加）
-        this.myRigidbody = GetComponent<Rigidbody>();
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
         GoToNextRoom();
-
-
-
     }
     private void GoToNextRoom()
     {
@@ -48,8 +39,6 @@ public class UnityChanController : MonoBehaviour
         }
         else
         {
-            
-
             //unitychanの方向を変える
             if (Input.GetKey(KeyCode.RightArrow))
             {

@@ -16,7 +16,8 @@ public class EnemyController : MonoBehaviour
     public bool isChasing = false;
     //player
     private GameObject player;
-
+    //目的地
+    private Vector3 destination;
     // Start is called before the first frame update
     void Start()
     {
@@ -45,6 +46,28 @@ public class EnemyController : MonoBehaviour
             this.myRigidbody.velocity = Vector3.zero;
             //走るアニメーションを終了
             this.myAnimator.SetFloat("Speed", 0);
+        }
+    }
+
+    public void OnTriggerEnterCallBack(Collider other)
+    {
+        //playerが視界に入ったら
+        if (other.tag == "player")
+        {
+            isChasing = true;
+            //目的地決定
+            destination = other.transform.position;
+            destination -= 2 * (Vector3.forward + Vector3.right);
+
+        }
+    }
+
+    public void OnTriggerExitCallBack(Collider other)
+    {
+        //playerが視界から出たら
+        if (other.tag == "player")
+        {
+            isChasing = false;
         }
     }
 }

@@ -7,12 +7,12 @@ public class UnityChanController : MonoBehaviour
 {
     //アニメーションするためのコンポーネントを入れる
     private Animator myAnimator;
-    //updateごとの移動量
-    private float runSpeedByUpdate = 0.1f;
+    //1秒の移動量
+    private float runSpeedPerSec = 8;
     //速度の向き
     private Vector3 runDirection;
-    //移動カウント
-    private int runCount;
+    //カウント
+    private float count;
 
     // Use this for initialization
     void Start()
@@ -22,20 +22,20 @@ public class UnityChanController : MonoBehaviour
     }
 
     // Update is called once per frame
-    void FixedUpdate()
+    void Update()
     {
         GoToNextRoom();
     }
     private void GoToNextRoom()
     {
 
-        if(runCount < 20)
+        if(count < 0.25f)
         {
             //走るアニメーションを開始
             this.myAnimator.SetFloat("Speed", 1);
 
-            transform.position += runSpeedByUpdate * runDirection;
-            runCount += 1;
+            transform.position += runSpeedPerSec * Time.deltaTime * runDirection;
+            count += Time.deltaTime;
         }
         else
         {
@@ -44,52 +44,36 @@ public class UnityChanController : MonoBehaviour
             {
                 transform.rotation = Quaternion.Euler(0, 90, 0);
                 runDirection = Vector3.right;
-                runCount = 0;
+                count = 0;
             }
             else if (Input.GetKey(KeyCode.LeftArrow))
             {
                 transform.rotation = Quaternion.Euler(0, 270, 0);
                 runDirection = Vector3.left;
-                runCount = 0;
+                count = 0;
             }
             else if (Input.GetKey(KeyCode.UpArrow))
             {
                 transform.rotation = Quaternion.Euler(0, 0, 0);
                 runDirection = Vector3.forward;
-                runCount = 0;
+                count = 0;
             }
             else if (Input.GetKey(KeyCode.DownArrow))
             {
                 transform.rotation = Quaternion.Euler(0, 180, 0);
                 runDirection = Vector3.back;
-                runCount = 0;
+                count = 0;
             }
             else
             {
+                float newX = Mathf.RoundToInt(transform.position.x);
+                float newZ = Mathf.RoundToInt(transform.position.z);
+                transform.position = new Vector3(newX,transform.position.y,newZ);
                 //走るアニメーションを終了
                 this.myAnimator.SetFloat("Speed", 0);
             }
         }
     }
 
-    private void OnTriggerEnter(Collider other)
-    {
-        //enemyの視界に入ったら
-        if(other.tag == "view")
-        {
-            //enemyのisChasingをtrueにする
-            GameObject oya = other.transform.parent.gameObject;
-            oya.GetComponent<EnemyController>().isChasing = true;
-        }
-    }
-    private void OnTriggerExit(Collider other)
-    {
-        //enemyの視界から出たら
-        if (other.tag == "view")
-        {
-            //enemyのisChasingをfalseにする
-            GameObject oya = other.transform.parent.gameObject;
-            oya.GetComponent<EnemyController>().isChasing = false;
-        }
-    }
+
 }

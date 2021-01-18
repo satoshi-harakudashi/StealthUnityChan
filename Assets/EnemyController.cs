@@ -9,7 +9,7 @@ public class EnemyController : MonoBehaviour
     //Unityちゃんを移動させるコンポーネントを入れる（追加）
     private Rigidbody myRigidbody;
     //1秒の移動量
-    private float runSpeedPerSec = 8;
+    private float runSpeedPerSec = 5;
     //速度の向き
     private Vector3 runDirection;
     //追跡中のブール
@@ -34,7 +34,7 @@ public class EnemyController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(count < 0.25f)
+        if(count < 0.4f)
         {
             //走るアニメーションを開始
             this.myAnimator.SetFloat("Speed", 1);
@@ -46,7 +46,7 @@ public class EnemyController : MonoBehaviour
         {
             if(isChasing)
             {
-                Vector3 posRelative = player.transform.position - transform.position;
+                Vector3 posRelative = destination - transform.position;
 
                 float xAbs = Mathf.Abs(posRelative.x);
                 float zAbs = Mathf.Abs(posRelative.z);
@@ -71,32 +71,40 @@ public class EnemyController : MonoBehaviour
                     runDirection = Vector3.back;
                     transform.rotation = Quaternion.Euler(0, 180, 0);
                 }
-
                 count = 0;
+                
             }
             else
             {
-                float newX = Mathf.RoundToInt(transform.position.x / 2);
-                float newZ = Mathf.RoundToInt(transform.position.z / 2);
-                newX *= 2;
-                newZ *= 2;
-
-                transform.position = new Vector3(newX, transform.position.y, newZ);
                 //走るアニメーションを終了
                 this.myAnimator.SetFloat("Speed", 0);
             }
             
+            float newX = Mathf.RoundToInt(transform.position.x / 2);
+            float newZ = Mathf.RoundToInt(transform.position.z / 2);
+            newX *= 2;
+            newZ *= 2;
+
+            transform.position = new Vector3(newX, transform.position.y, newZ);
         }
         
-        
+        if((transform.position - destination).magnitude < 2)
+        {
+            isChasing = false;
+        }
     }
 
-    public void OnTriggerEnterCallBack(Collider other)
+    public void OnTriggerStayCallBack(Collider other)
     {
         //playerが視界に入ったら
         if (other.tag == "player")
         {
-            isChasing = true;
+            if ((transform.position - player.transform.position).magnitude >= 2)
+            {
+                isChasing = true;
+                destination = player.transform.position;
+            }
+            
         }
     }
 
@@ -105,7 +113,7 @@ public class EnemyController : MonoBehaviour
         //playerが視界から出たら
         if (other.tag == "player")
         {
-            isChasing = false;
+            //isChasing = false;
         }
     }
 }

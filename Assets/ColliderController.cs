@@ -16,9 +16,9 @@ public class ColliderController : MonoBehaviour
     }
 
     // Update is called once per frame
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
-        eneCon.OnTriggerEnterCallBack(other);
+        eneCon.OnTriggerStayCallBack(other);
     }
 
     private void OnTriggerExit(Collider other)

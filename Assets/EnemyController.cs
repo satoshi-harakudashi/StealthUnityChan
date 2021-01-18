@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
+    private GameObject wallGererator;
     //アニメーションするためのコンポーネントを入れる
     private Animator myAnimator;
     //Unityちゃんを移動させるコンポーネントを入れる（追加）
@@ -25,6 +26,7 @@ public class EnemyController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        wallGererator = GameObject.Find("WallGenerator");
         //アニメータコンポーネントを取得
         this.myAnimator = GetComponent<Animator>();
         //Rigidbodyコンポーネントを取得（追加）
@@ -46,6 +48,8 @@ public class EnemyController : MonoBehaviour
         }
         else
         {
+            
+
             if(isChasing)
             {
                 Vector3 posRelative = destination - transform.position;
@@ -53,6 +57,53 @@ public class EnemyController : MonoBehaviour
                 float xAbs = Mathf.Abs(posRelative.x);
                 float zAbs = Mathf.Abs(posRelative.z);
 
+                //進行方向に壁があったら進まないようにしたい
+
+                //int arrayX = Mathf.RoundToInt(transform.position.x);
+                //int arrayZ = Mathf.RoundToInt(transform.position.z);
+
+                //if (posRelative.x > 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX + 1, arrayZ])
+                //{
+                //    runDirection = Vector3.forward;
+                //    transform.rotation = Quaternion.Euler(0, 0, 0);
+                //}
+                //else if (posRelative.x > 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ + 1])
+                //{
+                //    runDirection = Vector3.right;
+                //    transform.rotation = Quaternion.Euler(0, 90, 0);
+                //}
+                //else if (posRelative.x > 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX + 1, arrayZ])
+                //{
+                //    runDirection = Vector3.back;
+                //    transform.rotation = Quaternion.Euler(0, 180, 0);
+                //}
+                //else if (posRelative.x > 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ - 1])
+                //{
+                //    runDirection = Vector3.right;
+                //    transform.rotation = Quaternion.Euler(0, 90, 0);
+                //}
+                //else if (posRelative.x < 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX - 1, arrayZ])
+                //{
+                //    runDirection = Vector3.back;
+                //    transform.rotation = Quaternion.Euler(0, 180, 0);
+                //}
+                //else if (posRelative.x < 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ - 1])
+                //{
+                //    runDirection = Vector3.left;
+                //    transform.rotation = Quaternion.Euler(0, 270, 0);
+                //}
+                
+                //else if(posRelative.x < 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX - 1, arrayZ])
+                //{
+                //    runDirection = Vector3.forward;
+                //    transform.rotation = Quaternion.Euler(0, 0, 0);
+                //}
+                //else if(posRelative.x < 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ + 1])
+                //{
+                //    runDirection = Vector3.left;
+                //    transform.rotation = Quaternion.Euler(0, 270, 0);
+                //}
+                //else 
                 if (posRelative.x > 0 && xAbs > zAbs)
                 {
                     runDirection = Vector3.right;
@@ -82,11 +133,13 @@ public class EnemyController : MonoBehaviour
                 this.myAnimator.SetFloat("Speed", 0);
                 transform.rotation = playerRotation;
             }
-            
-            float newX = Mathf.RoundToInt(transform.position.x / 2);
-            float newZ = Mathf.RoundToInt(transform.position.z / 2);
+            int newX = Mathf.RoundToInt(transform.position.x / 2);
+            int newZ = Mathf.RoundToInt(transform.position.z / 2);
             newX *= 2;
             newZ *= 2;
+
+            int halfX = newX / 2;
+            int halfZ = newZ / 2;
 
             transform.position = new Vector3(newX, transform.position.y, newZ);
         }

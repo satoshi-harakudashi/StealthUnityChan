@@ -12,12 +12,14 @@ public class EnemyController : MonoBehaviour
     private float runSpeedPerSec = 5;
     //速度の向き
     private Vector3 runDirection;
-    //追跡中のブール
+    //追跡中か否か
     public bool isChasing = false;
     //player
     private GameObject player;
     //目的地
     private Vector3 destination;
+    //プレイヤーの向き
+    private Quaternion playerRotation;
     //カウント
     private float count = 0.25f;
     // Start is called before the first frame update
@@ -78,6 +80,7 @@ public class EnemyController : MonoBehaviour
             {
                 //走るアニメーションを終了
                 this.myAnimator.SetFloat("Speed", 0);
+                transform.rotation = playerRotation;
             }
             
             float newX = Mathf.RoundToInt(transform.position.x / 2);
@@ -108,20 +111,21 @@ public class EnemyController : MonoBehaviour
             //Rayの飛ばせる距離
             float distance = (player.transform.position - transform.position).magnitude;
 
-            //Rayの可視化    ↓Rayの原点　　　　↓Rayの方向　　　　　　　　　↓Rayの色
-            Debug.DrawLine(ray.origin, ray.direction * distance, Color.red);
+            //Rayの可視化
+            Debug.DrawLine(transform.position, player.transform.position - transform.position, Color.red);
 
             //もしRayにオブジェクトが衝突したら
-            //                  ↓Ray  ↓Rayが当たったオブジェクト ↓距離
             if (Physics.Raycast(ray, out hit, distance))
             {
-                //Rayが当たったオブジェクトのtagがPlayerだったら
+                //Rayが当たったオブジェクトのtagがwallだったら終了
                 if (hit.collider.tag == "wall") { return; }
             }
+
             if ((transform.position - player.transform.position).magnitude >= 2)
             {
                 isChasing = true;
                 destination = player.transform.position;
+                playerRotation = player.transform.rotation;
             }
             
         }

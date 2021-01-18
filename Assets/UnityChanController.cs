@@ -66,8 +66,11 @@ public class UnityChanController : MonoBehaviour
             }
             else
             {
-                float newX = Mathf.RoundToInt(transform.position.x);
-                float newZ = Mathf.RoundToInt(transform.position.z);
+                float newX = Mathf.RoundToInt(transform.position.x/2);
+                float newZ = Mathf.RoundToInt(transform.position.z/2);
+                newX *= 2;
+                newZ *= 2;
+
                 transform.position = new Vector3(newX,transform.position.y,newZ);
                 //走るアニメーションを終了
                 this.myAnimator.SetFloat("Speed", 0);

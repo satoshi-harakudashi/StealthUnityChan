@@ -99,6 +99,25 @@ public class EnemyController : MonoBehaviour
         //playerが視界に入ったら
         if (other.tag == "player")
         {
+            //Rayの作成
+            Ray ray = new Ray(transform.position, (player.transform.position - transform.position).normalized);
+
+            //Rayが当たったオブジェクトの情報を入れる箱
+            RaycastHit hit;
+
+            //Rayの飛ばせる距離
+            float distance = (player.transform.position - transform.position).magnitude;
+
+            //Rayの可視化    ↓Rayの原点　　　　↓Rayの方向　　　　　　　　　↓Rayの色
+            Debug.DrawLine(ray.origin, ray.direction * distance, Color.red);
+
+            //もしRayにオブジェクトが衝突したら
+            //                  ↓Ray  ↓Rayが当たったオブジェクト ↓距離
+            if (Physics.Raycast(ray, out hit, distance))
+            {
+                //Rayが当たったオブジェクトのtagがPlayerだったら
+                if (hit.collider.tag == "wall") { return; }
+            }
             if ((transform.position - player.transform.position).magnitude >= 2)
             {
                 isChasing = true;

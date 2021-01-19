@@ -59,51 +59,51 @@ public class EnemyController : MonoBehaviour
 
                 //進行方向に壁があったら進まないようにしたい
 
-                //int arrayX = Mathf.RoundToInt(transform.position.x);
-                //int arrayZ = Mathf.RoundToInt(transform.position.z);
+                int arrayX = Mathf.RoundToInt(transform.position.x/2);
+                int arrayZ = Mathf.RoundToInt(transform.position.z/2);
 
-                //if (posRelative.x > 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX + 1, arrayZ])
-                //{
-                //    runDirection = Vector3.forward;
-                //    transform.rotation = Quaternion.Euler(0, 0, 0);
-                //}
-                //else if (posRelative.x > 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ + 1])
-                //{
-                //    runDirection = Vector3.right;
-                //    transform.rotation = Quaternion.Euler(0, 90, 0);
-                //}
-                //else if (posRelative.x > 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX + 1, arrayZ])
-                //{
-                //    runDirection = Vector3.back;
-                //    transform.rotation = Quaternion.Euler(0, 180, 0);
-                //}
-                //else if (posRelative.x > 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ - 1])
-                //{
-                //    runDirection = Vector3.right;
-                //    transform.rotation = Quaternion.Euler(0, 90, 0);
-                //}
-                //else if (posRelative.x < 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX - 1, arrayZ])
-                //{
-                //    runDirection = Vector3.back;
-                //    transform.rotation = Quaternion.Euler(0, 180, 0);
-                //}
-                //else if (posRelative.x < 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ - 1])
-                //{
-                //    runDirection = Vector3.left;
-                //    transform.rotation = Quaternion.Euler(0, 270, 0);
-                //}
-                
-                //else if(posRelative.x < 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX - 1, arrayZ])
-                //{
-                //    runDirection = Vector3.forward;
-                //    transform.rotation = Quaternion.Euler(0, 0, 0);
-                //}
-                //else if(posRelative.x < 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ + 1])
-                //{
-                //    runDirection = Vector3.left;
-                //    transform.rotation = Quaternion.Euler(0, 270, 0);
-                //}
-                //else 
+                if (posRelative.x > 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX + 1, arrayZ])
+                {
+                    runDirection = Vector3.forward;
+                    transform.rotation = Quaternion.Euler(0, 0, 0);
+                }
+                else if (posRelative.x > 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ + 1])
+                {
+                    runDirection = Vector3.right;
+                    transform.rotation = Quaternion.Euler(0, 90, 0);
+                }
+                else if (posRelative.x > 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX + 1, arrayZ])
+                {
+                    runDirection = Vector3.back;
+                    transform.rotation = Quaternion.Euler(0, 180, 0);
+                }
+                else if (posRelative.x > 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ - 1])
+                {
+                    runDirection = Vector3.right;
+                    transform.rotation = Quaternion.Euler(0, 90, 0);
+                }
+                else if (posRelative.x < 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX - 1, arrayZ])
+                {
+                    runDirection = Vector3.back;
+                    transform.rotation = Quaternion.Euler(0, 180, 0);
+                }
+                else if (posRelative.x < 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ - 1])
+                {
+                    runDirection = Vector3.left;
+                    transform.rotation = Quaternion.Euler(0, 270, 0);
+                }
+
+                else if (posRelative.x < 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX - 1, arrayZ])
+                {
+                    runDirection = Vector3.forward;
+                    transform.rotation = Quaternion.Euler(0, 0, 0);
+                }
+                else if (posRelative.x < 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ + 1])
+                {
+                    runDirection = Vector3.left;
+                    transform.rotation = Quaternion.Euler(0, 270, 0);
+                }
+                else
                 if (posRelative.x > 0 && xAbs > zAbs)
                 {
                     runDirection = Vector3.right;

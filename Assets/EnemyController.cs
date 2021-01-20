@@ -4,33 +4,41 @@ using UnityEngine;
 
 public class EnemyController : MonoBehaviour
 {
+    //player
+    private GameObject player;
+    //wallgenerator
     private GameObject wallGererator;
     //アニメーションするためのコンポーネントを入れる
     private Animator myAnimator;
-    //Unityちゃんを移動させるコンポーネントを入れる（追加）
-    private Rigidbody myRigidbody;
-    //1秒の移動量
-    private float runSpeedPerSec = 5;
-    //速度の向き
-    private Vector3 runDirection;
     //追跡中か否か
     public bool isChasing = false;
-    //player
-    private GameObject player;
+    //追跡中の1回の移動量
+    private float runSpeed = 2;
+    //追跡の走りの向き
+    private Vector3 direction;
+    //追跡中の1回の移動時間
+    private float runTime = 0.35f;
+    //歩きの1回の移動量
+    private float walkSpeed = 2;
+
+
+
+
+    //カウント
+    private float count;
+    
     //目的地
     private Vector3 destination;
     //プレイヤーの向き
     private Quaternion playerRotation;
-    //カウント
-    private float count = 0.25f;
+    
     // Start is called before the first frame update
     void Start()
     {
         wallGererator = GameObject.Find("WallGenerator");
         //アニメータコンポーネントを取得
         this.myAnimator = GetComponent<Animator>();
-        //Rigidbodyコンポーネントを取得（追加）
-        this.myRigidbody = GetComponent<Rigidbody>();
+
         //player取得
         player = GameObject.Find("Player");
     }
@@ -38,117 +46,135 @@ public class EnemyController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(count < 0.4f)
+        //追跡
+        if(isChasing)
         {
-            //走るアニメーションを開始
-            this.myAnimator.SetFloat("Speed", 1);
-            
-            transform.position += runSpeedPerSec * Time.deltaTime * runDirection;
-            count += Time.deltaTime;
-        }
-        else
-        {
-            
-
-            if(isChasing)
+            if(count < runTime)
             {
+                //走るアニメーションを開始
+                this.myAnimator.SetFloat("Speed", 1);
+            
+                transform.position += runSpeed * Time.deltaTime / runTime * direction;
+                count += Time.deltaTime;
+            }
+            else
+            {
+                //playerとの相対位置
                 Vector3 posRelative = destination - transform.position;
 
+                //相対位置各成分の絶対値
                 float xAbs = Mathf.Abs(posRelative.x);
                 float zAbs = Mathf.Abs(posRelative.z);
 
-                //進行方向に壁があったら進まないようにしたい
+                #region 進行方向に壁があったら進まない
 
-                int arrayX = Mathf.RoundToInt(transform.position.x/2);
-                int arrayZ = Mathf.RoundToInt(transform.position.z/2);
+                int arrayX = Mathf.RoundToInt(transform.position.x / 2);
+                int arrayZ = Mathf.RoundToInt(transform.position.z / 2);
 
-                if (posRelative.x > 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX + 1, arrayZ])
+                if (posRelative.x > 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator3>().wallArray[arrayX + 1, arrayZ])
                 {
-                    runDirection = Vector3.forward;
+                    direction = Vector3.forward;
                     transform.rotation = Quaternion.Euler(0, 0, 0);
                 }
-                else if (posRelative.x > 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ + 1])
+                else if (posRelative.x > 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator3>().wallArray[arrayX, arrayZ + 1])
                 {
-                    runDirection = Vector3.right;
+                    direction = Vector3.right;
                     transform.rotation = Quaternion.Euler(0, 90, 0);
                 }
-                else if (posRelative.x > 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX + 1, arrayZ])
+                else if (posRelative.x > 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator3>().wallArray[arrayX + 1, arrayZ])
                 {
-                    runDirection = Vector3.back;
+                    direction = Vector3.back;
                     transform.rotation = Quaternion.Euler(0, 180, 0);
                 }
-                else if (posRelative.x > 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ - 1])
+                else if (posRelative.x > 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator3>().wallArray[arrayX, arrayZ - 1])
                 {
-                    runDirection = Vector3.right;
+                    direction = Vector3.right;
                     transform.rotation = Quaternion.Euler(0, 90, 0);
                 }
-                else if (posRelative.x < 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX - 1, arrayZ])
+                else if (posRelative.x < 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator3>().wallArray[arrayX - 1, arrayZ])
                 {
-                    runDirection = Vector3.back;
+                    direction = Vector3.back;
                     transform.rotation = Quaternion.Euler(0, 180, 0);
                 }
-                else if (posRelative.x < 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ - 1])
+                else if (posRelative.x < 0 && posRelative.z < 0 && wallGererator.GetComponent<WallGenerator3>().wallArray[arrayX, arrayZ - 1])
                 {
-                    runDirection = Vector3.left;
+                    direction = Vector3.left;
                     transform.rotation = Quaternion.Euler(0, 270, 0);
                 }
 
-                else if (posRelative.x < 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX - 1, arrayZ])
+                else if (posRelative.x < 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator3>().wallArray[arrayX - 1, arrayZ])
                 {
-                    runDirection = Vector3.forward;
+                    direction = Vector3.forward;
                     transform.rotation = Quaternion.Euler(0, 0, 0);
                 }
-                else if (posRelative.x < 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator2>().wallArray[arrayX, arrayZ + 1])
+                else if (posRelative.x < 0 && posRelative.z > 0 && wallGererator.GetComponent<WallGenerator3>().wallArray[arrayX, arrayZ + 1])
                 {
-                    runDirection = Vector3.left;
+                    direction = Vector3.left;
                     transform.rotation = Quaternion.Euler(0, 270, 0);
                 }
+                #endregion
+                #region 壁がなければ直線的に進む
                 else
                 if (posRelative.x > 0 && xAbs > zAbs)
                 {
-                    runDirection = Vector3.right;
+                    direction = Vector3.right;
                     transform.rotation = Quaternion.Euler(0, 90, 0);
                 }
                 else if (posRelative.x < 0 && xAbs > zAbs)
                 {
-                    runDirection = Vector3.left;
+                    direction = Vector3.left;
                     transform.rotation = Quaternion.Euler(0, 270, 0);
                 }
                 else if (posRelative.z > 0 && zAbs >= xAbs)
                 {
-                    runDirection = Vector3.forward;
+                    direction = Vector3.forward;
                     transform.rotation = Quaternion.Euler(0, 0, 0);
                 }
                 else if (posRelative.z < 0 && zAbs >= xAbs)
                 {
-                    runDirection = Vector3.back;
+                    direction = Vector3.back;
                     transform.rotation = Quaternion.Euler(0, 180, 0);
                 }
+                #endregion
                 count = 0;
-                
+
+                BeInCenter();
             }
-            else
+
+            //追跡終了
+            if((transform.position - destination).magnitude < 2)
             {
-                //走るアニメーションを終了
-                this.myAnimator.SetFloat("Speed", 0);
-                transform.rotation = playerRotation;
+                isChasing = false;
             }
-            int newX = Mathf.RoundToInt(transform.position.x / 2);
-            int newZ = Mathf.RoundToInt(transform.position.z / 2);
-            newX *= 2;
-            newZ *= 2;
-
-            int halfX = newX / 2;
-            int halfZ = newZ / 2;
-
-            transform.position = new Vector3(newX, transform.position.y, newZ);
         }
+
+
         
-        if((transform.position - destination).magnitude < 2)
+        else
         {
-            isChasing = false;
+            //走るアニメーションを終了
+            this.myAnimator.SetFloat("Speed", 0);
+            transform.rotation = playerRotation; 
         }
     }
+
+    public void BeInCenter()
+    {
+        int newX = Mathf.RoundToInt(transform.position.x / 2);
+        int newZ = Mathf.RoundToInt(transform.position.z / 2);
+        newX *= 2;
+        newZ *= 2;
+
+        int halfX = newX / 2;
+        int halfZ = newZ / 2;
+
+        transform.position = new Vector3(newX, transform.position.y, newZ);
+    }
+
+
+
+
+
 
     public void OnTriggerStayCallBack(Collider other)
     {

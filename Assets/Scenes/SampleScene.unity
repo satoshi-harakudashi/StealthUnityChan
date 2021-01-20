@@ -454,6 +454,7 @@ GameObject:
   - component: {fileID: 849737555}
   - component: {fileID: 849737554}
   - component: {fileID: 849737556}
+  - component: {fileID: 849737557}
   m_Layer: 0
   m_Name: WallGenerator
   m_TagString: Untagged
@@ -499,6 +500,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: e92069b8406fdc14bb9f4f26027c9d66, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  wallPrefab: {fileID: 2805483940208374771, guid: 6ebc9155f4a405047839728814f7eab8,
+    type: 3}
+--- !u!114 &849737557
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 849737553}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4d562c31c721c3b4cadaf5c6212a3839, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   wallPrefab: {fileID: 2805483940208374771, guid: 6ebc9155f4a405047839728814f7eab8,

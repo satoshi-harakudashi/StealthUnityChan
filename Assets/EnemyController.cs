@@ -6,7 +6,7 @@ public class EnemyController : MonoBehaviour
 {
     
     //wallgenerator
-    private GameObject wallGenerator;
+    static WallGenerator3 wallGenerator;
     //player
     private GameObject player;    
     //アニメーションするためのコンポーネントを入れる
@@ -43,7 +43,11 @@ public class EnemyController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        wallGenerator = GameObject.Find("WallGenerator");
+        if(wallGenerator == null)
+        {
+            wallGenerator = GameObject.Find("WallGenerator").GetComponent<WallGenerator3>();
+        }
+        
         
 
         //アニメータコンポーネントを取得
@@ -68,7 +72,8 @@ public class EnemyController : MonoBehaviour
         {
             isWaiting = false;
             walkCount = 0;
-            count = 0;
+            //目的地設定するためのカウント代入
+            count = walkTime;
         }
 
         EnemyMove(isChasing);
@@ -125,38 +130,6 @@ public class EnemyController : MonoBehaviour
             state = 1;
 
 
-            #region 壁以外を目的地とする
-            bool isAbleToMove = false;
-            while (!isAbleToMove)
-            {
-                int rnd = Random.Range(0, 4);
-                switch (rnd)
-                {
-                    case 0:
-                        destination = transform.position + 2 * Vector3.forward;
-                        break;
-                    case 1:
-                        destination = transform.position + 2 * Vector3.back;
-                        break;
-                    case 2:
-                        destination = transform.position + 2 * Vector3.right;
-                        break;
-                    case 3:
-                        destination = transform.position + 2 * Vector3.left;
-                        break;
-                }
-                //進行方向に壁がなければ進行可能
-                int x = Mathf.RoundToInt(destination.x / 2);
-                int z = Mathf.RoundToInt(destination.z / 2);
-                if (!wallGenerator.GetComponent<WallGenerator3>().wallArray[x, z]) { isAbleToMove = true; }
-
-                //自分の位置に壁があればwhileから出る
-                x = Mathf.RoundToInt(transform.position.x / 2);
-                z = Mathf.RoundToInt(transform.position.z / 2);
-                if (wallGenerator.GetComponent<WallGenerator3>().wallArray[x, z]) { isAbleToMove = true; }
-            }
-            #endregion
-
         }
         #endregion
 
@@ -173,8 +146,43 @@ public class EnemyController : MonoBehaviour
         else
         {
             BeInCenter();
+            //歩行中の目的地設定
+            if (!isChasing && !isWaiting)
+            {
+                bool isAbleToMove = false;
+                while (!isAbleToMove)
+                {
+                    int rnd = Random.Range(0, 4);
+                    switch (rnd)
+                    {
+                        case 0:
+                            destination = transform.position + 2 * Vector3.forward;
+                            break;
+                        case 1:
+                            destination = transform.position + 2 * Vector3.back;
+                            break;
+                        case 2:
+                            destination = transform.position + 2 * Vector3.right;
+                            break;
+                        case 3:
+                            destination = transform.position + 2 * Vector3.left;
+                            break;
+                    }
+                    //進行方向に壁がなければ進行可能
+                    int x = Mathf.RoundToInt(destination.x / 2);
+                    int z = Mathf.RoundToInt(destination.z / 2);
+                    if (!wallGenerator.wallArray[x, z]) { isAbleToMove = true; }
 
-            //待機中でなければ目的地の再設定
+                    //自分の位置に壁があればwhileから出る
+                    x = Mathf.RoundToInt(transform.position.x / 2);
+                    z = Mathf.RoundToInt(transform.position.z / 2);
+                    if (wallGenerator.wallArray[x, z]) { isAbleToMove = true; }
+                }
+
+
+            }
+            
+            //待機中でなければ目的地の再設定と向きの変更
             if (!isWaiting)
             {
                 //目的地との相対位置
@@ -188,43 +196,43 @@ public class EnemyController : MonoBehaviour
                 int arrayX = Mathf.RoundToInt(transform.position.x / 2);
                 int arrayZ = Mathf.RoundToInt(transform.position.z / 2);
 
-                if (posRelative.x > 0 && posRelative.z > 0 && wallGenerator.GetComponent<WallGenerator3>().wallArray[arrayX + 1, arrayZ])
+                if (posRelative.x > 0 && posRelative.z > 0 && wallGenerator.wallArray[arrayX + 1, arrayZ])
                 {
                     direction = Vector3.forward;
                     transform.rotation = Quaternion.Euler(0, 0, 0);
                 }
-                else if (posRelative.x > 0 && posRelative.z > 0 && wallGenerator.GetComponent<WallGenerator3>().wallArray[arrayX, arrayZ + 1])
+                else if (posRelative.x > 0 && posRelative.z > 0 && wallGenerator.wallArray[arrayX, arrayZ + 1])
                 {
                     direction = Vector3.right;
                     transform.rotation = Quaternion.Euler(0, 90, 0);
                 }
-                else if (posRelative.x > 0 && posRelative.z < 0 && wallGenerator.GetComponent<WallGenerator3>().wallArray[arrayX + 1, arrayZ])
+                else if (posRelative.x > 0 && posRelative.z < 0 && wallGenerator.wallArray[arrayX + 1, arrayZ])
                 {
                     direction = Vector3.back;
                     transform.rotation = Quaternion.Euler(0, 180, 0);
                 }
-                else if (posRelative.x > 0 && posRelative.z < 0 && wallGenerator.GetComponent<WallGenerator3>().wallArray[arrayX, arrayZ - 1])
+                else if (posRelative.x > 0 && posRelative.z < 0 && wallGenerator.wallArray[arrayX, arrayZ - 1])
                 {
                     direction = Vector3.right;
                     transform.rotation = Quaternion.Euler(0, 90, 0);
                 }
-                else if (posRelative.x < 0 && posRelative.z < 0 && wallGenerator.GetComponent<WallGenerator3>().wallArray[arrayX - 1, arrayZ])
+                else if (posRelative.x < 0 && posRelative.z < 0 && wallGenerator.wallArray[arrayX - 1, arrayZ])
                 {
                     direction = Vector3.back;
                     transform.rotation = Quaternion.Euler(0, 180, 0);
                 }
-                else if (posRelative.x < 0 && posRelative.z < 0 && wallGenerator.GetComponent<WallGenerator3>().wallArray[arrayX, arrayZ - 1])
+                else if (posRelative.x < 0 && posRelative.z < 0 && wallGenerator.wallArray[arrayX, arrayZ - 1])
                 {
                     direction = Vector3.left;
                     transform.rotation = Quaternion.Euler(0, 270, 0);
                 }
 
-                else if (posRelative.x < 0 && posRelative.z > 0 && wallGenerator.GetComponent<WallGenerator3>().wallArray[arrayX - 1, arrayZ])
+                else if (posRelative.x < 0 && posRelative.z > 0 && wallGenerator.wallArray[arrayX - 1, arrayZ])
                 {
                     direction = Vector3.forward;
                     transform.rotation = Quaternion.Euler(0, 0, 0);
                 }
-                else if (posRelative.x < 0 && posRelative.z > 0 && wallGenerator.GetComponent<WallGenerator3>().wallArray[arrayX, arrayZ + 1])
+                else if (posRelative.x < 0 && posRelative.z > 0 && wallGenerator.wallArray[arrayX, arrayZ + 1])
                 {
                     direction = Vector3.left;
                     transform.rotation = Quaternion.Euler(0, 270, 0);

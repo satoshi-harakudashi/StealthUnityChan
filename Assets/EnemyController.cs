@@ -8,7 +8,7 @@ public class EnemyController : MonoBehaviour
     //wallgenerator
     static WallGenerator3 wallGenerator;
     //player
-    private GameObject player;    
+    static GameObject player;    
     //アニメーションするためのコンポーネントを入れる
     private Animator myAnimator;
     //追跡中か否か
@@ -47,14 +47,18 @@ public class EnemyController : MonoBehaviour
         {
             wallGenerator = GameObject.Find("WallGenerator").GetComponent<WallGenerator3>();
         }
+        //player取得
+        if(player == null)
+        {
+            player = GameObject.Find("Player");
+        }
         
         
 
         //アニメータコンポーネントを取得
         this.myAnimator = GetComponent<Animator>();
 
-        //player取得
-        player = GameObject.Find("Player");
+        
     }
 
     // Update is called once per frame

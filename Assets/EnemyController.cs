@@ -8,7 +8,9 @@ public class EnemyController : MonoBehaviour
     //wallgenerator
     static WallGenerator3 wallGenerator;
     //player
-    static GameObject player;    
+    static GameObject player;
+    //unitychancontroller
+    static UnityChanController unityChanController;
     //アニメーションするためのコンポーネントを入れる
     private Animator myAnimator;
     //追跡中か否か
@@ -51,6 +53,7 @@ public class EnemyController : MonoBehaviour
         if(player == null)
         {
             player = GameObject.Find("Player");
+            unityChanController = player.GetComponent<UnityChanController>();
         }
         
         
@@ -64,7 +67,8 @@ public class EnemyController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (unityChanController.isDead) { return; }
+
         if(isWaiting && count < waitTime) 
         {
             //アニメーションを開始
@@ -91,9 +95,6 @@ public class EnemyController : MonoBehaviour
         newX *= 2;
         newZ *= 2;
 
-        int halfX = newX / 2;
-        int halfZ = newZ / 2;
-
         transform.position = new Vector3(newX, transform.position.y, newZ);
 
         if(isChasing && (destination-transform.position).magnitude < 1)
@@ -119,8 +120,8 @@ public class EnemyController : MonoBehaviour
 
     private void EnemyMove(bool isChase)
     {
-        int state = 0;
-        float moveTime = 0;
+        int state;
+        float moveTime;
 
         #region isChase応じて変数設定
         if (isChase)

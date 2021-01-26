@@ -8,7 +8,7 @@ public class WallGenerator3 : MonoBehaviour
 
     public GameObject wallPrefab;
     //100×100の壁の有無の配列
-    public bool[,] wallArray = new bool[100, 100];
+    public bool[,] wallArray = new bool[30, 30];
     //生成済の壁の座標を入れるリスト
     private List<Vector2Int> wallPosList = new List<Vector2Int>();
 
@@ -16,23 +16,23 @@ public class WallGenerator3 : MonoBehaviour
     void Start()
     {
         //最外周を壁にする
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 30; i++)
         {
 
             wallArray[0, i] = true;
 
-            wallArray[99, i] = true;
+            wallArray[29, i] = true;
 
             wallArray[i, 0] = true;
 
-            wallArray[i, 99] = true;
+            wallArray[i, 29] = true;
 
         }
 
         //迷路の敷地をすべてリストに加える
-        for(int i = 0; i < 100; i ++)
+        for(int i = 0; i < 30; i ++)
         {
-            for(int j = 0; j < 100; j ++)
+            for(int j = 0; j < 30; j ++)
             {
                 wallPosList.Add(new Vector2Int(i, j));
             }
@@ -58,7 +58,7 @@ public class WallGenerator3 : MonoBehaviour
                 switch (directInt)
                 {
                     case 0:
-                        if (!WallInArea(posX, posZ, 4, -1, 2, 2) && posX + 2 < 100)
+                        if (!WallInArea(posX, posZ, 4, -1, 2, 2) && posX + 2 < 30)
                         {
                             wallArray[posX + 1, posZ] = true;
                             //wallPosList.Add(new Vector2Int(posX + 1, posZ));
@@ -94,7 +94,7 @@ public class WallGenerator3 : MonoBehaviour
                         }
                         break;
                     case 2:
-                        if (!WallInArea(posX, posZ, 2, 2, 4, -1) && posZ + 2 < 100)
+                        if (!WallInArea(posX, posZ, 2, 2, 4, -1) && posZ + 2 < 30)
                         {
                             wallArray[posX, posZ + 1] = true;
                             //wallPosList.Add(new Vector2Int(posX, posZ + 1));
@@ -138,9 +138,9 @@ public class WallGenerator3 : MonoBehaviour
 
 
 
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 30; i++)
         {
-            for (int j = 0; j < 100; j++)
+            for (int j = 0; j < 30; j++)
             {
                 if (wallArray[i, j])
                 {
@@ -176,7 +176,7 @@ public class WallGenerator3 : MonoBehaviour
                 {
 
                 }
-                else if (i >= 0 && i < 100 && j >= 0 && j < 100)
+                else if (i >= 0 && i < 30 && j >= 0 && j < 30)
                 {
                     if (wallArray[i, j] == true)
                     {

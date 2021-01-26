@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class UnityChanController : MonoBehaviour
 {
@@ -14,6 +16,10 @@ public class UnityChanController : MonoBehaviour
     private Vector3 runDirection;
     //カウント
     private float count;
+    //ゲームオーバー判定
+    public bool isDead = false;
+    //ゲームオーバーテキスト
+    private GameObject gameOverText;
 
     // Use this for initialization
     void Start()
@@ -21,11 +27,21 @@ public class UnityChanController : MonoBehaviour
         wallGererator = GameObject.Find("WallGenerator");
         //アニメータコンポーネントを取得
         this.myAnimator = GetComponent<Animator>();
+        gameOverText = GameObject.Find("GameOverText");
     }
 
     // Update is called once per frame
     void Update()
     {
+        if (isDead) 
+        { 
+            if(Input.GetKeyDown(KeyCode.Return))
+            {
+                SceneManager.LoadScene("SampleScene");
+            }
+            return; 
+        }
+
         GoToNextRoom();
     }
     private void GoToNextRoom()
@@ -81,5 +97,16 @@ public class UnityChanController : MonoBehaviour
         }
     }
 
+    private void OnTriggerEnter(Collider other)
+    {
+        if(other.tag == "enemy")
+        {
+            //ゲームオーバー
+            
+            gameOverText.GetComponent<Text>().text = "GAME OVER";
+            isDead = true;
 
+            
+        }
+    }
 }

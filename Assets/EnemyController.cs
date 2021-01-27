@@ -33,7 +33,8 @@ public class EnemyController : MonoBehaviour
     private float walkTime = 0.8f;
     //待機時間
     private float waitTime = 3f;
-
+    //サイズ
+    private int size = 1;
 
 
     //移動用のカウント
@@ -298,14 +299,16 @@ public class EnemyController : MonoBehaviour
     private void OnTriggerEnter(Collider other)
     {
         //enemy同士でぶつかったとき、
-        if(other.tag == "enemy")
+        if (other.tag == "enemy")
         {
             //自分のほうが大きいとき、または同じ大きさで自分のx座標が小さいとき
-            if(transform.localScale.y > other.transform.localScale.y  
+            if (transform.localScale.y > other.transform.localScale.y
                 || (transform.localScale.y == other.transform.localScale.y && transform.position.x < other.transform.position.x))
             {
                 //巨大化
-                transform.localScale += Vector3.one * 0.1f;
+                size += other.GetComponent<EnemyController>().size;
+                transform.localScale = Vector3.one * size * 0.5f;
+                view.transform.localScale = new Vector3(view.transform.localScale.x, size * 0.8f, view.transform.localScale.z);
                 //足を速くする
                 runSpeed += 0.01f;
                 runTime = runTime = runTimeFirst * 1 / runSpeed;
@@ -313,25 +316,24 @@ public class EnemyController : MonoBehaviour
             else
             {
                 //サイズをリセット
-                transform.localScale = Vector3.zero * 0.5f;
+                size = 1;
+                transform.localScale = Vector3.one * size * 0.5f;
+                view.transform.localScale = new Vector3(view.transform.localScale.x, size, view.transform.localScale.z);
                 //足の速さリセット
                 runSpeed = 1f;
                 runTime = runTime = runTimeFirst * 1 / runSpeed;
 
                 float distance = 0;
-                while(distance < 20)
+                while (distance < 20)
                 {
                     int posX = Random.Range(0, 30);
                     int posZ = Random.Range(0, 30);
                     transform.position = new Vector3(2 * posX, 0, 2 * posZ);
-                    if(!wallGenerator.wallArray[posX,posZ])
+                    if (!wallGenerator.wallArray[posX, posZ])
                     {
                         distance = (transform.position - player.transform.position).magnitude;
                     }
                 }
-
-
-
 
                 BeInCenter();
                 isChasing = false;
@@ -349,18 +351,16 @@ public class EnemyController : MonoBehaviour
         if (other.tag == "player")
         {
             //Rayの作成
-            Ray ray = new Ray(transform.position + Vector3.up * transform.localScale.y, (player.transform.position + 1.5f * Vector3.up - transform.position).normalized);
-
-            
+            Ray ray = new Ray(transform.position + 2 * Vector3.up * transform.localScale.y, (player.transform.position + 1.5f * Vector3.up - transform.position).normalized);
 
             //Rayの飛ばせる距離
-            float distance = (player.transform.position - transform.position).magnitude;
+            float distance = (player.transform.position + 1.5f * Vector3.up - (transform.position +2 * Vector3.up * transform.localScale.y)).magnitude;
 
             //Rayが当たったオブジェクトの情報を入れる箱
             RaycastHit[] hits = Physics.RaycastAll(ray,distance);
 
             //Rayの可視化
-            Debug.DrawLine(transform.position + Vector3.up * transform.localScale.y, player.transform.position + 1.5f * Vector3.up, Color.red);
+            Debug.DrawLine(transform.position + 1.4f * Vector3.up * transform.localScale.y, player.transform.position + 1.5f * Vector3.up, Color.red);
 
             bool isAbleToDetect = true;
 
@@ -377,18 +377,14 @@ public class EnemyController : MonoBehaviour
                 }
             }
 
-            //もしRayにオブジェクトが衝突したら
-            if (!isAbleToDetect)
+            if (isAbleToDetect)
             {
-                return;
+                isChasing = true;
+                isWaiting = false;
+                destination = player.transform.position;
+                playerRotation = player.transform.rotation;
+
             }
-
-            isChasing = true;
-            isWaiting = false;
-            destination = player.transform.position;
-            playerRotation = player.transform.rotation;
-
-            
         }
     }
 

@@ -9,6 +9,10 @@ public class EnemyController : MonoBehaviour
     static WallGenerator3 wallGenerator;
     //player
     static GameObject player;
+    //viewprefab
+    public GameObject viewPrefab;
+    //作成したview
+    private GameObject view;
     //unitychancontroller
     static UnityChanController unityChanController;
     //アニメーションするためのコンポーネントを入れる
@@ -17,12 +21,14 @@ public class EnemyController : MonoBehaviour
     public bool isChasing = false;
     //待機中か否か
     private bool isWaiting = true;
-    //1回の移動量
-    private float runSpeed = 2;
+    //速度
+    private float runSpeed = 1;
     //移動の向き
     private Vector3 direction;
-    //追跡中の1回の移動時間
-    private float runTime = 0.3f;
+    //追跡中の1回の移動時間(初期)
+    private float runTimeFirst = 0.5f;
+    //追跡中の1回の移動時間;
+    private float runTime;
     //通常の1回の移動時間
     private float walkTime = 0.8f;
     //待機時間
@@ -56,17 +62,25 @@ public class EnemyController : MonoBehaviour
             unityChanController = player.GetComponent<UnityChanController>();
         }
         
-        
-
         //アニメータコンポーネントを取得
         this.myAnimator = GetComponent<Animator>();
 
+        view = Instantiate(viewPrefab);
+        GameObject viewChild = view.transform.GetChild(0).gameObject;
+
+        viewChild.GetComponent<ColliderController>().Initialize(this.gameObject);
+
+        runTime = runTimeFirst * 1 / runSpeed;
         
     }
 
     // Update is called once per frame
     void Update()
     {
+        view.transform.position = transform.position;
+        view.transform.rotation = transform.rotation;
+
+
         if (unityChanController.isDead) { return; }
 
         if(isWaiting && count < waitTime) 
@@ -281,6 +295,52 @@ public class EnemyController : MonoBehaviour
     }
 
 
+    private void OnTriggerEnter(Collider other)
+    {
+        //enemy同士でぶつかったとき、
+        if(other.tag == "enemy")
+        {
+            //自分のほうが大きいとき、または同じ大きさで自分のx座標が小さいとき
+            if(transform.localScale.y > other.transform.localScale.y  
+                || (transform.localScale.y == other.transform.localScale.y && transform.position.x < other.transform.position.x))
+            {
+                //巨大化
+                transform.localScale += Vector3.one * 0.1f;
+                //足を速くする
+                runSpeed += 0.01f;
+                runTime = runTime = runTimeFirst * 1 / runSpeed;
+            }
+            else
+            {
+                //サイズをリセット
+                transform.localScale = Vector3.zero * 0.5f;
+                //足の速さリセット
+                runSpeed = 1f;
+                runTime = runTime = runTimeFirst * 1 / runSpeed;
+
+                float distance = 0;
+                while(distance < 20)
+                {
+                    int posX = Random.Range(0, 30);
+                    int posZ = Random.Range(0, 30);
+                    transform.position = new Vector3(2 * posX, 0, 2 * posZ);
+                    if(!wallGenerator.wallArray[posX,posZ])
+                    {
+                        distance = (transform.position - player.transform.position).magnitude;
+                    }
+                }
+
+
+
+
+                BeInCenter();
+                isChasing = false;
+                isWaiting = true;
+
+            }
+
+        }
+    }
 
 
     public void OnTriggerStayCallBack(Collider other)
@@ -289,22 +349,38 @@ public class EnemyController : MonoBehaviour
         if (other.tag == "player")
         {
             //Rayの作成
-            Ray ray = new Ray(transform.position, (player.transform.position - transform.position).normalized);
+            Ray ray = new Ray(transform.position + Vector3.up * transform.localScale.y, (player.transform.position + 1.5f * Vector3.up - transform.position).normalized);
 
-            //Rayが当たったオブジェクトの情報を入れる箱
-            RaycastHit hit;
+            
 
             //Rayの飛ばせる距離
             float distance = (player.transform.position - transform.position).magnitude;
 
+            //Rayが当たったオブジェクトの情報を入れる箱
+            RaycastHit[] hits = Physics.RaycastAll(ray,distance);
+
             //Rayの可視化
-            Debug.DrawLine(transform.position, player.transform.position - transform.position, Color.red);
+            Debug.DrawLine(transform.position + Vector3.up * transform.localScale.y, player.transform.position + 1.5f * Vector3.up, Color.red);
+
+            bool isAbleToDetect = true;
+
+            foreach (var obj in hits)
+            {
+                switch (obj.collider.tag)
+                {
+                    case "wall":
+                        isAbleToDetect = false;
+                        break;
+                    case "enemy":
+                        isAbleToDetect = false;
+                        break;
+                }
+            }
 
             //もしRayにオブジェクトが衝突したら
-            if (Physics.Raycast(ray, out hit, distance))
+            if (!isAbleToDetect)
             {
-                //Rayが当たったオブジェクトのtagがwallだったら終了
-                if (hit.collider.tag == "wall") { return; }
+                return;
             }
 
             isChasing = true;

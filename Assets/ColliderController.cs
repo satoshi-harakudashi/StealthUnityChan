@@ -11,13 +11,24 @@ public class ColliderController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        enemy = transform.parent.gameObject;
-        eneCon = enemy.GetComponent<EnemyController>();
+        
     }
+
+
+
+    public void Initialize(GameObject other)
+    {
+        enemy = other;
+        eneCon = enemy.GetComponent<EnemyController>();
+
+
+    }
+
 
     // Update is called once per frame
     private void OnTriggerStay(Collider other)
     {
+        if(eneCon == null) { return; }
         eneCon.OnTriggerStayCallBack(other);
     }
 

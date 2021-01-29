@@ -9,10 +9,6 @@ public class EnemyController : MonoBehaviour
     static WallGenerator3 wallGenerator;
     //player
     static GameObject player;
-    //viewprefab
-    public GameObject viewPrefab;
-    //作成したview
-    private GameObject view;
     //unitychancontroller
     static UnityChanController unityChanController;
     //アニメーションするためのコンポーネントを入れる
@@ -66,10 +62,9 @@ public class EnemyController : MonoBehaviour
         //アニメータコンポーネントを取得
         this.myAnimator = GetComponent<Animator>();
 
-        view = Instantiate(viewPrefab);
-        GameObject viewChild = view.transform.GetChild(0).gameObject;
+        GameObject view = transform.GetChild(1).gameObject;
+        view.GetComponent<ColliderController>().Initialize(gameObject);
 
-        viewChild.GetComponent<ColliderController>().Initialize(this.gameObject);
 
         runTime = runTimeFirst * 1 / runSpeed;
         
@@ -78,8 +73,6 @@ public class EnemyController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        view.transform.position = transform.position;
-        view.transform.rotation = transform.rotation;
 
 
         if (unityChanController.isDead) { return; }
@@ -308,8 +301,6 @@ public class EnemyController : MonoBehaviour
                 //巨大化
                 size += other.GetComponent<EnemyController>().size;
                 transform.localScale = Vector3.one * size * 0.5f;
-                view.transform.localScale = new Vector3(view.transform.localScale.x, size * 0.8f, view.transform.localScale.z);
-                //足を速くする
                 runSpeed += 0.01f;
                 runTime = runTime = runTimeFirst * 1 / runSpeed;
             }
@@ -318,7 +309,6 @@ public class EnemyController : MonoBehaviour
                 //サイズをリセット
                 size = 1;
                 transform.localScale = Vector3.one * size * 0.5f;
-                view.transform.localScale = new Vector3(view.transform.localScale.x, size, view.transform.localScale.z);
                 //足の速さリセット
                 runSpeed = 1f;
                 runTime = runTime = runTimeFirst * 1 / runSpeed;
@@ -350,6 +340,7 @@ public class EnemyController : MonoBehaviour
         //playerが視界に入ったら
         if (other.tag == "player")
         {
+            Debug.Log("player!");
             //Rayの作成
             Ray ray = new Ray(transform.position + 2 * Vector3.up * transform.localScale.y, (player.transform.position + 1.5f * Vector3.up - transform.position).normalized);
 

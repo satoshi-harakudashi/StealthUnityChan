@@ -19,7 +19,7 @@ public class ColliderController : MonoBehaviour
     public void Initialize(GameObject other)
     {
         enemy = other;
-        eneCon = enemy.GetComponent<EnemyController>();
+        eneCon = enemy.GetComponentInParent<EnemyController>();
 
 
     }
@@ -32,10 +32,10 @@ public class ColliderController : MonoBehaviour
         eneCon.OnTriggerStayCallBack(other);
     }
 
-    private void OnTriggerExit(Collider other)
-    {
-        eneCon.OnTriggerExitCallBack(other);
-    }
+    //private void OnTriggerExit(Collider other)
+    //{
+    //    eneCon.OnTriggerExitCallBack(other);
+    //}
 
 
 }

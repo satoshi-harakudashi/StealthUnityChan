@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -21,7 +22,8 @@ public class EnemyController2 : MonoBehaviour
 
     //状態変数　0:待機、1:徘徊、2:追跡
     public int stateNo = 0;
-
+    //前回の状態変数
+    private int lastStateNo = 0;
 
     //走行速度
     private float runSpeed = 1;
@@ -93,6 +95,7 @@ public class EnemyController2 : MonoBehaviour
             Chase();
         }
 
+        lastStateNo = stateNo;
     }
 
     
@@ -160,117 +163,134 @@ public class EnemyController2 : MonoBehaviour
     }
     private void Chase()
     {
-       
-        if(count < runTime)
+        if(lastStateNo != stateNo)
         {
-            //アニメーションを開始
-            this.myAnimator.SetInteger("State", 2);
+            DirectChase();
+        }
 
-            transform.position += 2 * Time.deltaTime / runTime * transform.forward;
-            count += Time.deltaTime;
+        //進行負荷でない場合
+        if(stateNo == 2)
+        {
+            if(count < runTime)
+            {
+                //アニメーションを開始
+                this.myAnimator.SetInteger("State", 2);
+
+                transform.position += 2 * Time.deltaTime / runTime * transform.forward;
+                count += Time.deltaTime;
+            }
+            else
+            {
+                //位置合わせ、向き変える
+
+                BeInCenter();
+
+                DirectChase();
+            
+
+                //目的地に近づいたら追跡をやめて、最後にプレイヤーが向いていた方向を見る
+                if((transform.position - destination).magnitude < 1)
+                {
+                    Debug.Log("EndChase!");
+                    stateNo = 0;
+                    transform.rotation = playerRotation;
+                }
+                else
+                {
+                
+                }
+
+                count = 0;
+            
+            }
+        }
+
+        
+    }
+
+    private void DirectChase()
+    {
+        #region destinationによって進行方向の優先度決める
+
+        Vector3 direction = destination - transform.position;
+
+        float dirX = direction.x;
+        float dirZ = direction.z;
+        float absX = Mathf.Abs(dirX);
+        float absZ = Mathf.Abs(dirZ);
+
+        //縦ラインを合わせる
+        if (dirZ > 0 && absZ >= absX)
+        {
+            directArray[0] = Vector3.forward;
+        }
+        else if (dirZ < 0 && absZ >= absX)
+        {
+            directArray[0] = Vector3.back;
+        }
+        else if (dirX > 0 && absX >= absZ)
+        {
+            directArray[0] = Vector3.right;
+        }
+        else if (dirX < 0 && absX >= absZ)
+        {
+            directArray[0] = Vector3.left;
+        }
+        //横ラインを合わせる
+        if (directArray[0] == Vector3.forward || directArray[0] == Vector3.back)
+        {
+            if (dirX > 0)
+            {
+                directArray[1] = Vector3.right;
+            }
+            else
+            {
+                directArray[1] = Vector3.left;
+            }
         }
         else
         {
-            //位置合わせ、向き変える
-
-            BeInCenter();
-
-            #region destinationによって進行方向の優先度決める
-
-            Vector3 direction = destination - transform.position;
-
-            float dirX = direction.x;
-            float dirZ = direction.z;
-            float absX = Mathf.Abs(dirX);
-            float absZ = Mathf.Abs(dirZ);
-
-            //縦ラインを合わせる
-            if(dirZ > 0 && absZ >= absX)
+            if (dirZ > 0)
             {
-                directArray[0] = Vector3.forward;
-            }
-            else if(dirZ < 0 && absZ >= absX)
-            {
-                directArray[0] = Vector3.back;
-            }
-            else if(dirX > 0 && absX >= absZ)
-            {
-                directArray[0] = Vector3.right;
-            }
-            else if(dirX < 0 && absX >= absZ)
-            {
-                directArray[0] = Vector3.left;
-            }
-            //横ラインを合わせる
-            if(directArray[0] == Vector3.forward || directArray[0] == Vector3.back)
-            {
-                if(dirX > 0)
-                {
-                    directArray[1] = Vector3.right;
-                }
-                else
-                {
-                    directArray[1] = Vector3.left;
-                }
+                directArray[1] = Vector3.forward;
             }
             else
             {
-                if(dirZ >0)
-                {
-                    directArray[1] = Vector3.forward;
-                }
-                else
-                {
-                    directArray[1] = Vector3.back;
-                }
+                directArray[1] = Vector3.back;
             }
-            #endregion
+        }
+        #endregion
 
-            Vector3 nextDes = Vector3.one;
+        Vector3 nextDes = Vector3.one;
 
-            int wallCo = 0;
-            //壁があれば優先度低いやつ選ぶ
-            for(int i = 0; i < 2; i ++)
+        int wallCo = 0;
+        //壁があれば優先度低いやつ選ぶ
+        for (int i = 0; i < 2; i++)
+        {
+            nextDes = transform.position + 2 * directArray[i];
+
+            int X = Mathf.RoundToInt(nextDes.x / 2);
+            int Z = Mathf.RoundToInt(nextDes.z / 2);
+
+            if (!wallGenerator.wallArray[X, Z])
             {
-                nextDes = transform.position + 2 * directArray[i];
-
-                int X = Mathf.RoundToInt(nextDes.x / 2);
-                int Z = Mathf.RoundToInt(nextDes.z / 2);
-
-                if (!wallGenerator.wallArray[X, Z])
-                {
-                    break;
-                }
-                else
-                {
-                    wallCo += 1;
-                }
-            }
-
-            if(wallCo == 2)
-            {
-                //追跡終了
-                stateNo = 0;
+                break;
             }
             else
             {
-                transform.LookAt(nextDes);
+                wallCo += 1;
             }
+        }
 
-            //目的地に近づいたら追跡をやめて、最後にプレイヤーが向いていた方向を見る
-            if((transform.position - destination).magnitude < 1)
-            {
-                Debug.Log("EndChase!");
-                stateNo = 0;
-                transform.rotation = playerRotation;
-            }
-            else
-            {
-                
-            }
-
-            count = 0;
-            
+        if (wallCo == 2)
+        {
+            //追跡終了
+            stateNo = 0;
+            return;
+        }
+        else
+        {
+            transform.LookAt(nextDes);
         }
     }
 
@@ -359,8 +379,8 @@ public class EnemyController2 : MonoBehaviour
                 float distance = 0;
                 while (distance < 20)
                 {
-                    int posX = Random.Range(0, 30);
-                    int posZ = Random.Range(0, 30);
+                    int posX = UnityEngine.Random.Range(0, 30);
+                    int posZ = UnityEngine.Random.Range(0, 30);
                     transform.position = new Vector3(2 * posX, 0, 2 * posZ);
                     if (!wallGenerator.wallArray[posX, posZ])
                     {

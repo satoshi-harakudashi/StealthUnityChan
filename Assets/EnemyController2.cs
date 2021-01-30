@@ -2,41 +2,44 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Enemy : MonoBehaviour
+public class EnemyController2 : MonoBehaviour
 {
+    //待機状態、徘徊状態、追跡状態
+
+
 
     //wallgenerator
     static WallGenerator3 wallGenerator;
     //player
     static GameObject player;
-    //viewprefab
-    public GameObject viewPrefab;
+    //view
+    private GameObject view;
     //unitychancontroller
     static UnityChanController unityChanController;
     //アニメーションするためのコンポーネントを入れる
     private Animator myAnimator;
-    //追跡中か否か
-    public bool isChasing = false;
-    //待機中か否か
-    private bool isWaiting = true;
-    //速度
+
+    //状態変数　0:待機、1:徘徊、2:追跡
+    public int stateNo = 0;
+
+
+    //走行速度
     private float runSpeed = 1;
-    //移動の向き
-    private Vector3 direction;
+    
     //追跡中の1回の移動時間(初期)
     private float runTimeFirst = 0.5f;
     //追跡中の1回の移動時間;
     private float runTime;
     //通常の1回の移動時間
-    private float walkTime = 0.8f;
+    private float walkTime = 2f;
     //待機時間
     private float waitTime = 3f;
-    //サイズ
-    private int size = 1;
+    //体のサイズ(体積比)
+    public int size = 1;
 
 
-    //移動用のカウント
-    private float count;
+    //時間のカウント
+    public float count;
     //歩いたマスのカウント
     int walkCount;
     //待機までに歩くマスの数
@@ -46,7 +49,8 @@ public class Enemy : MonoBehaviour
     private Vector3 destination;
     //プレイヤーの向き
     private Quaternion playerRotation;
-
+    //方向の箱
+    private Vector3[] directArray = new Vector3[2];
 
 
     // Start is called before the first frame update
@@ -66,16 +70,362 @@ public class Enemy : MonoBehaviour
         //アニメータコンポーネントを取得
         this.myAnimator = GetComponent<Animator>();
 
-        GameObject view = Instantiate(viewPrefab);
+        view = transform.GetChild(1).gameObject;
+        view.GetComponent<ColliderController>().Initialize(gameObject);
 
-        view.transform.parent = transform;
-
-
+        runTime = runTimeFirst;
     }
+
     // Update is called once per frame
     void Update()
     {
+        //待機処理
+        if(stateNo == 0)
+        {
+            Wait();
+        }
+        else if(stateNo == 1)
+        {
+            Walk();
+        }
+        else if(stateNo == 2)
+        {
+            Chase();
+        }
 
+    }
+
+    
+
+    private void Wait()
+    {
+        if(count < waitTime)
+        {
+            //アニメーションを開始
+            this.myAnimator.SetInteger("State", 0);
+            count += Time.deltaTime;
+            return;
+        }
+        else
+        {
+            //徘徊モードに移行
+            stateNo = 1;
+            //歩行マスカウントリセット
+            walkCount = 0;
+
+            DirectRand();
+
+            count = 0;
+        }
+
+
+    }
+
+    private void Walk()
+    {
+        if(walkCount < walkBeforeWait)
+        {
+            if (count < walkTime)
+            {
+                //アニメーションを開始
+                this.myAnimator.SetInteger("State", 1);
+                //前進
+                transform.position += 2 * Time.deltaTime / walkTime * transform.forward;
+                count += Time.deltaTime;
+            }
+            else
+            {
+
+                //位置合わせ、向き変える
+
+                BeInCenter();
+
+                DirectRand();
+
+                count = 0;
+                walkCount += 1;
+
+            }
+        }
+        else
+        {
+            walkCount = 0;
+            //待機に戻す
+            stateNo = 0;
+        }
+
+
+
+
+    }
+    private void Chase()
+    {
+       
+        if(count < runTime)
+        {
+            //アニメーションを開始
+            this.myAnimator.SetInteger("State", 2);
+
+            transform.position += 2 * Time.deltaTime / runTime * transform.forward;
+            count += Time.deltaTime;
+        }
+        else
+        {
+            //位置合わせ、向き変える
+
+            BeInCenter();
+
+            #region destinationによって進行方向の優先度決める
+
+            Vector3 direction = destination - transform.position;
+
+            float dirX = direction.x;
+            float dirZ = direction.z;
+            float absX = Mathf.Abs(dirX);
+            float absZ = Mathf.Abs(dirZ);
+
+            //縦ラインを合わせる
+            if(dirZ > 0 && absZ >= absX)
+            {
+                directArray[0] = Vector3.forward;
+            }
+            else if(dirZ < 0 && absZ >= absX)
+            {
+                directArray[0] = Vector3.back;
+            }
+            else if(dirX > 0 && absX >= absZ)
+            {
+                directArray[0] = Vector3.right;
+            }
+            else if(dirX < 0 && absX >= absZ)
+            {
+                directArray[0] = Vector3.left;
+            }
+            //横ラインを合わせる
+            if(directArray[0] == Vector3.forward || directArray[0] == Vector3.back)
+            {
+                if(dirX > 0)
+                {
+                    directArray[1] = Vector3.right;
+                }
+                else
+                {
+                    directArray[1] = Vector3.left;
+                }
+            }
+            else
+            {
+                if(dirZ >0)
+                {
+                    directArray[1] = Vector3.forward;
+                }
+                else
+                {
+                    directArray[1] = Vector3.back;
+                }
+            }
+            #endregion
+
+            Vector3 nextDes = Vector3.one;
+
+            int wallCo = 0;
+            //壁があれば優先度低いやつ選ぶ
+            for(int i = 0; i < 2; i ++)
+            {
+                nextDes = transform.position + 2 * directArray[i];
+
+                int X = Mathf.RoundToInt(nextDes.x / 2);
+                int Z = Mathf.RoundToInt(nextDes.z / 2);
+
+                if (!wallGenerator.wallArray[X, Z])
+                {
+                    break;
+                }
+                else
+                {
+                    wallCo += 1;
+                }
+            }
+
+            if(wallCo == 2)
+            {
+                //追跡終了
+                stateNo = 0;
+            }
+            else
+            {
+                transform.LookAt(nextDes);
+            }
+
+            //目的地に近づいたら追跡をやめて、最後にプレイヤーが向いていた方向を見る
+            if((transform.position - destination).magnitude < 1)
+            {
+                Debug.Log("EndChase!");
+                stateNo = 0;
+                transform.rotation = playerRotation;
+            }
+            else
+            {
+                
+            }
+
+            count = 0;
+            
+        }
+    }
+
+    private void DirectRand()
+    {
+        bool isAbleToMove = false;
+        Vector3 nextDes = Vector3.one;
+
+        while(!isAbleToMove)
+        {
+            //ランダムな方向を向く
+            int rnd = UnityEngine.Random.Range(0, 4);
+
+            switch (rnd)
+            {
+                case 0:
+                    nextDes = transform.position + 2 * Vector3.forward;
+                    break;
+                case 1:
+                    nextDes = transform.position + 2 * Vector3.right;
+                    break;
+                case 2:
+                    nextDes = transform.position + 2 * Vector3.back;
+                    break;
+                case 3:
+                    nextDes = transform.position + 2 * Vector3.left;
+                    break;
+            }
+
+            int X = Mathf.RoundToInt(nextDes.x / 2);
+            int Z = Mathf.RoundToInt(nextDes.z / 2);
+
+            if(!wallGenerator.wallArray[X,Z])
+            {
+                isAbleToMove = true;
+            }
+        }
+
+        transform.LookAt(nextDes);
+
+    }
+
+    private void BeInCenter()
+    {
+        //位置合わせ
+        int newX = 2 * Mathf.RoundToInt(transform.position.x / 2);
+        int newZ = 2 * Mathf.RoundToInt(transform.position.z / 2);
+        transform.position = new Vector3(newX, transform.position.y, newZ);
+
+    }
+
+
+    private void OnTriggerEnter(Collider other)
+    {
+        //enemy同士でぶつかったとき、
+        if (other.tag == "enemy")
+        {
+            //自分のほうが大きいとき、または同じ大きさで自分のx座標が小さいとき、または同じ大きさでx座標同じでz座標が小さいとき
+            if (transform.localScale.y > other.transform.localScale.y
+                || (transform.localScale.y == other.transform.localScale.y && transform.position.x < other.transform.position.x)
+                || (transform.localScale.y == other.transform.localScale.y && transform.position.x == other.transform.position.x && transform.position.z < other.transform.position.z))
+            {
+                //巨大化
+                size += other.GetComponent<EnemyController2>().size;
+                float length = Mathf.Pow(size, 0.5f);
+
+
+                transform.localScale = Vector3.one * length;
+                view.transform.localScale = new Vector3(10/length,10/length,2);
+                view.transform.localPosition = new Vector3(-27.27f, 0, 12.75f) / length;
+
+                runSpeed += 0.01f;
+                runTime = runTime = runTimeFirst * 1 / runSpeed;
+            }
+            else
+            {
+                //サイズをリセット
+                size = 1;
+                transform.localScale = Vector3.one * size;
+                view.transform.localScale = new Vector3(10, 10, 2);
+                view.transform.localPosition = new Vector3(-27.27f, 0, 12.75f) / size;
+                //足の速さリセット
+                runSpeed = 1f;
+                runTime = runTime = runTimeFirst * 1 / runSpeed;
+
+                float distance = 0;
+                while (distance < 20)
+                {
+                    int posX = Random.Range(0, 30);
+                    int posZ = Random.Range(0, 30);
+                    transform.position = new Vector3(2 * posX, 0, 2 * posZ);
+                    if (!wallGenerator.wallArray[posX, posZ])
+                    {
+                        distance = (transform.position - player.transform.position).magnitude;
+                    }
+                }
+
+                BeInCenter();
+                stateNo = 0;
+
+            }
+
+        }
+    }
+
+
+
+
+    public void OnTriggerStayCallBack(Collider other)
+    {
+        //playerが視界に入ったら
+        if (other.tag == "player")
+        {
+            Vector3 myHead = transform.position + 1.5f * Vector3.up * transform.localScale.y;
+            Vector3 playerHead = player.transform.position + 1.5f * Vector3.up;
+
+
+            
+            //Rayの作成
+            Ray ray = new Ray(myHead, (playerHead - myHead).normalized);
+
+            //Rayの飛ばせる距離
+            float distance = (playerHead - myHead).magnitude;
+
+            //Rayが当たったオブジェクトの情報を入れる箱
+            RaycastHit[] hits = Physics.RaycastAll(ray, distance);
+
+            //Rayの可視化
+            Debug.DrawLine(myHead, playerHead, Color.red);
+
+            bool isAbleToDetect = true;
+
+            foreach (var obj in hits)
+            {
+                switch (obj.collider.tag)
+                {
+                    case "wall":
+                        isAbleToDetect = false;
+                        break;
+                    case "enemy":
+                        isAbleToDetect = false;
+                        break;
+                }
+            }
+
+            if (isAbleToDetect)
+            {
+                //Debug.Log("player!");
+                stateNo = 2;
+                destination = player.transform.position;
+                //count = runTime;
+                playerRotation = player.transform.rotation;
+
+            }
+        }
     }
 
 }

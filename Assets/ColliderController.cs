@@ -5,7 +5,7 @@ using UnityEngine;
 public class ColliderController : MonoBehaviour
 {
     GameObject enemy;
-    EnemyController eneCon;
+    EnemyController2 eneCon;
 
 
     // Start is called before the first frame update
@@ -19,7 +19,7 @@ public class ColliderController : MonoBehaviour
     public void Initialize(GameObject other)
     {
         enemy = other;
-        eneCon = enemy.GetComponentInParent<EnemyController>();
+        eneCon = enemy.GetComponentInParent<EnemyController2>();
 
 
     }

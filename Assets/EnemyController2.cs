@@ -29,7 +29,7 @@ public class EnemyController2 : MonoBehaviour
     private float runSpeed = 1;
     
     //追跡中の1回の移動時間(初期)
-    private float runTimeFirst = 0.5f;
+    private float runTimeFirst = 0.4f;
     //追跡中の1回の移動時間;
     private float runTime;
     //通常の1回の移動時間
@@ -54,6 +54,10 @@ public class EnemyController2 : MonoBehaviour
     //方向の箱
     private Vector3[] directArray = new Vector3[2];
 
+    private Vector3 viewSizeVec;
+    private Vector3 viewPos;
+
+
 
     // Start is called before the first frame update
     void Start()
@@ -70,10 +74,12 @@ public class EnemyController2 : MonoBehaviour
         }
 
         //アニメータコンポーネントを取得
-        this.myAnimator = GetComponent<Animator>();
+        myAnimator = GetComponentInChildren<Animator>();
 
-        view = transform.GetChild(1).gameObject;
+        view = transform.GetChild(0).gameObject;
         view.GetComponent<ColliderController>().Initialize(gameObject);
+        viewSizeVec = view.transform.localScale;
+        viewPos = view.transform.localPosition;
 
         runTime = runTimeFirst;
     }
@@ -359,22 +365,22 @@ public class EnemyController2 : MonoBehaviour
 
 
                 transform.localScale = Vector3.one * length;
-                view.transform.localScale = new Vector3(10/length,10/length,2);
-                view.transform.localPosition = new Vector3(-27.27f, 0, 12.75f) / length;
+                view.transform.localScale = new Vector3(viewSizeVec.x/length,viewSizeVec.y/length,2);
+                view.transform.localPosition = viewPos/length;
 
                 runSpeed += 0.01f;
-                runTime = runTime = runTimeFirst * 1 / runSpeed;
+                runTime = runTimeFirst * 1 / runSpeed;
             }
             else
             {
                 //サイズをリセット
                 size = 1;
                 transform.localScale = Vector3.one * size;
-                view.transform.localScale = new Vector3(10, 10, 2);
-                view.transform.localPosition = new Vector3(-27.27f, 0, 12.75f) / size;
+                view.transform.localScale = viewSizeVec;
+                view.transform.localPosition = viewPos;
                 //足の速さリセット
                 runSpeed = 1f;
-                runTime = runTime = runTimeFirst * 1 / runSpeed;
+                runTime = runTimeFirst * 1 / runSpeed;
 
                 float distance = 0;
                 while (distance < 20)

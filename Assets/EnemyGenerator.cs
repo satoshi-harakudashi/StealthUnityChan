@@ -19,8 +19,8 @@ public class EnemyGenerator : MonoBehaviour
             bool isAbleToGenerate = false;
             while (!isAbleToGenerate)
             {
-                int x = Random.Range(5, 30);
-                int z = Random.Range(5, 30);
+                int x = Random.Range(3, 30);
+                int z = Random.Range(3, 30);
                 if (!wallGenerator.GetComponent<WallGenerator3>().wallArray[x, z])
                 {
                     isAbleToGenerate = true;

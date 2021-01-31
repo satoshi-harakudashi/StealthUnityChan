@@ -29,7 +29,7 @@ public class EnemyController2 : MonoBehaviour
     private float runSpeed = 1;
     
     //追跡中の1回の移動時間(初期)
-    private float runTimeFirst = 0.4f;
+    private float runTimeFirst = 0.6f;
     //追跡中の1回の移動時間;
     private float runTime;
     //通常の1回の移動時間

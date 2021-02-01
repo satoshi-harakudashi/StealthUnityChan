@@ -349,12 +349,12 @@ public class EnemyController2 : MonoBehaviour
     }
 
 
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerStay(Collider other)
     {
         //enemy同士でぶつかったとき、
         if (other.tag == "enemy")
         {
-            //自分のほうが大きいとき、または同じ大きさで自分のx座標が小さいとき、または同じ大きさでx座標同じでz座標が小さいとき
+            //自分のほうが大きいとき、または同じ大きさで自分のx座標が小さいとき
             if (transform.localScale.y > other.transform.localScale.y
                 || (transform.localScale.y == other.transform.localScale.y && transform.position.x < other.transform.position.x)
                 || (transform.localScale.y == other.transform.localScale.y && transform.position.x == other.transform.position.x && transform.position.z < other.transform.position.z))
@@ -371,7 +371,9 @@ public class EnemyController2 : MonoBehaviour
                 runSpeed += 0.01f;
                 runTime = runTimeFirst * 1 / runSpeed;
             }
-            else
+            else if (transform.localScale.y < other.transform.localScale.y
+                || (transform.localScale.y == other.transform.localScale.y && transform.position.x > other.transform.position.x)
+                || (transform.localScale.y == other.transform.localScale.y && transform.position.x == other.transform.position.x && transform.position.z > other.transform.position.z))
             {
                 //サイズをリセット
                 size = 1;

@@ -6,7 +6,12 @@ public class WallGenerator3 : MonoBehaviour
 {
     //壁伸ばし法http://www5d.biglobe.ne.jp/stssk/maze/make.html
 
+    private GameObject player;
+    private GameObject roof;
+    public GameObject pieceOfRoof;
     public GameObject wallPrefab;
+    public GameObject stairPrefab;
+
     //100×100の壁の有無の配列
     public bool[,] wallArray = new bool[30, 30];
     //生成済の壁の座標を入れるリスト
@@ -135,9 +140,6 @@ public class WallGenerator3 : MonoBehaviour
             wallPosList.Remove(new Vector2Int(posX, posZ));
         }
 
-
-
-
         for (int i = 0; i < 30; i++)
         {
             for (int j = 0; j < 30; j++)
@@ -150,6 +152,52 @@ public class WallGenerator3 : MonoBehaviour
             }
         }
 
+        int playerPosX = 0;
+        int playerPosZ = 0;
+
+        bool isAbleToPut = false;
+        while(!isAbleToPut)
+        {
+            playerPosX = Random.Range(0, 30);
+            playerPosZ = Random.Range(0, 30);
+            if (!wallArray[playerPosX, playerPosZ]) { isAbleToPut = true; }
+        }
+
+        int stairPosX = 0;
+        int stairPosZ = 0;
+        isAbleToPut = false;
+        while(!isAbleToPut)
+        {
+            stairPosX = Random.Range(0, 30);
+            stairPosZ = Random.Range(0, 30);
+            if(!wallArray[stairPosX,stairPosZ] && (stairPosX < playerPosX -10 || stairPosX > playerPosX + 10 || stairPosZ < playerPosZ - 10 || stairPosZ > playerPosZ + 10))
+            {
+                isAbleToPut = true;
+            }
+
+        }
+
+        player = GameObject.Find("Player");
+        player.transform.position = new Vector3(playerPosX * 2, 0, playerPosZ * 2);
+
+        GameObject stair = Instantiate(stairPrefab);
+        stair.transform.position = new Vector3(stairPosX * 2 + 1, 0, stairPosZ * 2 -1);
+
+        roof = GameObject.Find("Roof");
+
+        for(int i = 0; i < 120; i ++)
+        {
+            for (int j = 0; j < 120; j++)
+            {
+                GameObject por = Instantiate(pieceOfRoof);
+                por.transform.parent = roof.transform;
+                por.transform.position = new Vector3(i * 0.5f, 50, j * 0.5f);
+
+            }               
+        }
+
+
+        
 
 
     }

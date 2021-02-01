@@ -191,7 +191,15 @@ public class WallGenerator3 : MonoBehaviour
             {
                 GameObject por = Instantiate(pieceOfRoof);
                 por.transform.parent = roof.transform;
-                por.transform.position = new Vector3(i * 0.5f, 50, j * 0.5f);
+                por.transform.position = new Vector3((i-1.5f) * 0.5f, 5, (j-1.5f) * 0.5f);
+                if(wallArray[Mathf.RoundToInt(i/4),Mathf.RoundToInt(j/4)])
+                {
+                    por.GetComponent<RoofController>().aboveWall = true;
+                }
+                else
+                {
+                    por.GetComponent<RoofController>().aboveWall = false;
+                }
 
             }               
         }

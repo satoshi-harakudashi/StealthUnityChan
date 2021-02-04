@@ -30,7 +30,7 @@ public class EnemyController : MonoBehaviour
     //待機時間
     private float waitTime = 3f;
     //サイズ
-    private int size = 1;
+    public float size = 1;
 
 
     //移動用のカウント
@@ -48,6 +48,7 @@ public class EnemyController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+
         if(wallGenerator == null)
         {
             wallGenerator = GameObject.Find("WallGenerator").GetComponent<WallGenerator3>();

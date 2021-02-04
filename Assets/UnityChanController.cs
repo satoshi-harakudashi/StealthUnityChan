@@ -15,25 +15,52 @@ public class UnityChanController : MonoBehaviour
     //速度の向き
     private Vector3 runDirection;
     //カウント
-    private float count;
+    private float count = 0.25f;
+
+    public int arrayInt;
+    public int floorNo;
+    //クリア判定
+    public bool isClear = false;
     //ゲームオーバー判定
     public bool isDead = false;
+    //クリアせずに次の階へ行く
+    public bool isNext = false;
+
+
+
     //ゲームオーバーテキスト
-    private GameObject gameOverText;
+    private Text gameOverText;
+    //インフォメーションテキスト
+    private Text informationText;
 
     // Use this for initialization
     void Start()
     {
         wallGererator = GameObject.Find("WallGenerator");
+        
         //アニメータコンポーネントを取得
         this.myAnimator = GetComponent<Animator>();
-        gameOverText = GameObject.Find("GameOverText");
+        gameOverText = GameObject.Find("GameOverText").GetComponent<Text>();
+        informationText = GameObject.Find("InformationText").GetComponent<Text>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        if (isDead) 
+        informationText.text = floorNo + "階";
+
+
+        if (isClear)
+        {
+            if (Input.GetKeyDown(KeyCode.Return))
+            {
+                //次の階に上がる処理
+                GoToNextFloor();
+
+            }
+            return;
+        }
+        else if (isDead) 
         { 
             if(Input.GetKeyDown(KeyCode.Return))
             {
@@ -41,9 +68,45 @@ public class UnityChanController : MonoBehaviour
             }
             return; 
         }
+        else if (isNext)
+        {
+            //次の階に上がる処理
+            GoToNextFloor();
+        }
 
-        GoToNextRoom();
+
+        if (Input.GetKeyDown(KeyCode.Return))
+        {
+            isNext = true;            
+        }
+        else
+        {
+            GoToNextRoom();
+        }
+
+        
     }
+
+    private void GoToNextFloor()
+    {
+        wallGererator.GetComponent<WallGenerator3>().floorNo += 1;
+        wallGererator.GetComponent<WallGenerator3>().arrayInt += 1;
+        wallGererator.GetComponent<WallGenerator3>().PrepareThisFloor();
+        isClear = false;
+        isDead = false;
+        isNext = false;
+        gameOverText.GetComponent<Text>().text = "";
+
+        count = 0.25f;
+        int newX = Mathf.RoundToInt((transform.position.x + arrayInt) / 2);
+        int newZ = Mathf.RoundToInt((transform.position.z + arrayInt) / 2);
+        newX = 2 * newX - arrayInt;
+        newZ = 2 * newZ - arrayInt;
+        transform.position = new Vector3(newX, transform.position.y, newZ);
+
+        myAnimator.SetFloat("Speed", 0);
+    }
+
     private void GoToNextRoom()
     {
         
@@ -57,8 +120,8 @@ public class UnityChanController : MonoBehaviour
         }
         else
         {
-            int newX = Mathf.RoundToInt(transform.position.x/2);
-            int newZ = Mathf.RoundToInt(transform.position.z/2);
+            int newX = Mathf.RoundToInt((transform.position.x + arrayInt)/2);
+            int newZ = Mathf.RoundToInt((transform.position.z + arrayInt)/2);
             
             //unitychanの方向を変える
             if (Input.GetKey(KeyCode.RightArrow))
@@ -91,15 +154,15 @@ public class UnityChanController : MonoBehaviour
                 //走るアニメーションを終了
                 this.myAnimator.SetFloat("Speed", 0);
             }
-            newX *= 2;
-            newZ *= 2;
+            newX = 2 * newX - arrayInt;
+            newZ = 2 * newZ - arrayInt;
             transform.position = new Vector3(newX,transform.position.y,newZ);
         }
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if(other.tag == "enemy")
+        if(!isClear && other.tag == "enemy")
         {
             //ゲームオーバー
             
@@ -107,6 +170,14 @@ public class UnityChanController : MonoBehaviour
             isDead = true;
 
             
+        }
+        else if(!isDead && other.tag == "goal")
+        {
+            //次の階層へ
+            gameOverText.GetComponent<Text>().text = "CLEAR";
+            isClear = true;
+
+
         }
     }
 }

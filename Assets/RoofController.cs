@@ -5,44 +5,72 @@ using UnityEngine;
 public class RoofController : MonoBehaviour
 {
     public bool aboveWall;
-
-    private GameObject player;
+    //player
+    static GameObject player;
+    //unitychancontroller
+    static UnityChanController unityChanController;
+    //
+    static WallGenerator3 wallGenerator;
+    
     private Renderer renderer;
-    private Vector2 thisPos;
+    private Vector3 thisPos3;
+
+
 
     // Start is called before the first frame update
     void Start()
     {
-        player = GameObject.Find("Player");
+        if (player == null)
+        {
+            player = GameObject.Find("Player");
+            unityChanController = player.GetComponent<UnityChanController>();
+        }
+        if (wallGenerator == null)
+        {
+            wallGenerator = GameObject.Find("WallGenerator").GetComponent<WallGenerator3>();
+        }
+        
         renderer = GetComponent<MeshRenderer>();
-        thisPos = new Vector2(transform.position.x, transform.position.z);
+        thisPos3 = transform.position - player.transform.position;
     }
 
     // Update is called once per frame
     void Update()
     {
+        transform.position = thisPos3 + player.transform.position;
+
+        if (unityChanController.isClear || unityChanController.isNext)
+        {
+            Destroy(this.gameObject);
+        }
+
+        int x = Mathf.RoundToInt((transform.position.x + wallGenerator.arrayInt) / 2);
+        int z = Mathf.RoundToInt((transform.position.z + wallGenerator.arrayInt) / 2);
+
+        //if (wallGenerator.wallArray[x,z])
+        //{
+        //    aboveWall = true;
+        //}
+        //else
+        //{
+        //    aboveWall = false;
+        //}
+
+
+
+
+
         Vector2 playerPos = new Vector2(player.transform.position.x, player.transform.position.z);
         if(aboveWall)
         {
             if (renderer.enabled)
             {
-                
-                if ((thisPos - playerPos).magnitude < 7)
-                {
-                    renderer.enabled = false;
-                }
+                renderer.enabled = false;
             }
         }
         else
         {
-            if ((thisPos - playerPos).magnitude < 7)
-            {
-                renderer.enabled = false;
-            }
-            else
-            {
-                renderer.enabled = true;
-            }
+
         }
     }
 }

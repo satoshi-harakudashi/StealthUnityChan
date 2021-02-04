@@ -14,7 +14,7 @@ public class EnemyController2 : MonoBehaviour
     //player
     static GameObject player;
     //view
-    private GameObject view;
+    public GameObject view;
     //unitychancontroller
     static UnityChanController unityChanController;
     //アニメーションするためのコンポーネントを入れる
@@ -36,9 +36,11 @@ public class EnemyController2 : MonoBehaviour
     private float walkTime = 2f;
     //待機時間
     private float waitTime = 3f;
-    //体のサイズ(体積比)
-    public int size = 1;
 
+    //初期サイズ
+    public float firstSize = 1;
+    //サイズ
+    public float size = 1;
 
     //時間のカウント
     public float count;
@@ -56,8 +58,8 @@ public class EnemyController2 : MonoBehaviour
 
     private Vector3 viewSizeVec;
     private Vector3 viewPos;
-
-
+    private int arrayInt;
+    public int firstY;
 
     // Start is called before the first frame update
     void Start()
@@ -65,7 +67,9 @@ public class EnemyController2 : MonoBehaviour
         if (wallGenerator == null)
         {
             wallGenerator = GameObject.Find("WallGenerator").GetComponent<WallGenerator3>();
+
         }
+        arrayInt = wallGenerator.arrayInt;
         //player取得
         if (player == null)
         {
@@ -87,6 +91,11 @@ public class EnemyController2 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(unityChanController.isClear || unityChanController.isNext)
+        {
+            Destroy(this.gameObject);
+        }
+
         //待機処理
         if(stateNo == 0)
         {
@@ -275,8 +284,8 @@ public class EnemyController2 : MonoBehaviour
         {
             nextDes = transform.position + 2 * directArray[i];
 
-            int X = Mathf.RoundToInt(nextDes.x / 2);
-            int Z = Mathf.RoundToInt(nextDes.z / 2);
+            int X = Mathf.RoundToInt((nextDes.x + arrayInt) / 2);
+            int Z = Mathf.RoundToInt((nextDes.z + arrayInt) / 2);
 
             if (!wallGenerator.wallArray[X, Z])
             {
@@ -326,8 +335,8 @@ public class EnemyController2 : MonoBehaviour
                     break;
             }
 
-            int X = Mathf.RoundToInt(nextDes.x / 2);
-            int Z = Mathf.RoundToInt(nextDes.z / 2);
+            int X = Mathf.RoundToInt((nextDes.x + arrayInt) / 2);
+            int Z = Mathf.RoundToInt((nextDes.z + arrayInt) / 2);
 
             if(!wallGenerator.wallArray[X,Z])
             {
@@ -342,8 +351,8 @@ public class EnemyController2 : MonoBehaviour
     private void BeInCenter()
     {
         //位置合わせ
-        int newX = 2 * Mathf.RoundToInt(transform.position.x / 2);
-        int newZ = 2 * Mathf.RoundToInt(transform.position.z / 2);
+        int newX = 2 * Mathf.RoundToInt((transform.position.x + arrayInt)/ 2) - arrayInt;
+        int newZ = 2 * Mathf.RoundToInt((transform.position.z + arrayInt)/ 2) - arrayInt;
         transform.position = new Vector3(newX, transform.position.y, newZ);
 
     }
@@ -351,13 +360,18 @@ public class EnemyController2 : MonoBehaviour
 
     private void OnTriggerStay(Collider other)
     {
+        if(view == null)
+        {
+            return;
+        }
+
         //enemy同士でぶつかったとき、
         if (other.tag == "enemy")
         {
             //自分のほうが大きいとき、または同じ大きさで自分のx座標が小さいとき
             if (transform.localScale.y > other.transform.localScale.y
-                || (transform.localScale.y == other.transform.localScale.y && transform.position.x < other.transform.position.x)
-                || (transform.localScale.y == other.transform.localScale.y && transform.position.x == other.transform.position.x && transform.position.z < other.transform.position.z))
+                || (Mathf.Abs(transform.localScale.y - other.transform.localScale.y) < Mathf.Epsilon && transform.position.x < other.transform.position.x)
+                || (Mathf.Abs(transform.localScale.y - other.transform.localScale.y) < Mathf.Epsilon && transform.position.x == other.transform.position.x && transform.position.z < other.transform.position.z))
             {
                 //巨大化
                 size += other.GetComponent<EnemyController2>().size;
@@ -372,11 +386,12 @@ public class EnemyController2 : MonoBehaviour
                 runTime = runTimeFirst * 1 / runSpeed;
             }
             else if (transform.localScale.y < other.transform.localScale.y
-                || (transform.localScale.y == other.transform.localScale.y && transform.position.x > other.transform.position.x)
-                || (transform.localScale.y == other.transform.localScale.y && transform.position.x == other.transform.position.x && transform.position.z > other.transform.position.z))
+                || (Mathf.Abs(transform.localScale.y - other.transform.localScale.y) < Mathf.Epsilon && transform.position.x > other.transform.position.x)
+                || (Mathf.Abs(transform.localScale.y - other.transform.localScale.y) < Mathf.Epsilon && transform.position.x == other.transform.position.x && transform.position.z > other.transform.position.z))
             {
+
                 //サイズをリセット
-                size = 1;
+                size = firstSize;
                 transform.localScale = Vector3.one * size;
                 view.transform.localScale = viewSizeVec;
                 view.transform.localPosition = viewPos;
@@ -385,11 +400,11 @@ public class EnemyController2 : MonoBehaviour
                 runTime = runTimeFirst * 1 / runSpeed;
 
                 float distance = 0;
-                while (distance < 20)
+                while (distance < 5)
                 {
-                    int posX = UnityEngine.Random.Range(0, 30);
-                    int posZ = UnityEngine.Random.Range(0, 30);
-                    transform.position = new Vector3(2 * posX, 0, 2 * posZ);
+                    int posX = UnityEngine.Random.Range(0, arrayInt);
+                    int posZ = UnityEngine.Random.Range(0, arrayInt);
+                    transform.position = new Vector3(2 * posX - arrayInt, firstY, 2 * posZ - arrayInt);
                     if (!wallGenerator.wallArray[posX, posZ])
                     {
                         distance = (transform.position - player.transform.position).magnitude;

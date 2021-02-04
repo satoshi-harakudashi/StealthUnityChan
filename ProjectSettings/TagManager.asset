@@ -8,6 +8,8 @@ TagManager:
   - enemy
   - view
   - wall
+  - goal
+  - roof
   layers:
   - Default
   - TransparentFX

@@ -454,7 +454,7 @@ public class EnemyController2 : MonoBehaviour
                         isAbleToDetect = false;
                         break;
                     case "enemy":
-                        isAbleToDetect = false;
+                        //isAbleToDetect = false;
                         break;
                 }
             }

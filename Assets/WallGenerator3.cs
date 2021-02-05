@@ -35,7 +35,7 @@ public class WallGenerator3 : MonoBehaviour
         GameObject floor = Instantiate(floorPrefab);
         floor.transform.position = new Vector3(-1, 4 * (floorNo - 1) - 1, -1);
         floor.transform.localScale = new Vector3(2 * arrayInt, 2, 2 * arrayInt);
-        floor.GetComponent<Renderer>().material.mainTextureScale = new Vector2(arrayInt, arrayInt);
+        floor.GetComponent<Renderer>().material.mainTextureScale = new Vector2(arrayInt*0.4f, arrayInt*0.4f);
 
         wallArray = new bool[arrayInt, arrayInt];
 

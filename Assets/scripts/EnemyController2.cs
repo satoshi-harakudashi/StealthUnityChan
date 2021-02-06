@@ -327,20 +327,17 @@ public class EnemyController2 : MonoBehaviour
 
         if (wallCo == 2)
         {
-            //追跡終了
-            if(size > state3From && size < state3To)
-            {
-                stateNo = 3;
-            }
-            else
-            {
-                stateNo = 0;
-            }
-            return;
+            stateNo = 0;
         }
         else
         {
             transform.LookAt(nextDes);
+        }
+
+
+        if (size > state3From && size < state3To)
+        {
+            stateNo = 3;
         }
     }
 
@@ -389,7 +386,6 @@ public class EnemyController2 : MonoBehaviour
         int newX = 2 * Mathf.RoundToInt((transform.position.x + arrayInt)/ 2) - arrayInt;
         int newZ = 2 * Mathf.RoundToInt((transform.position.z + arrayInt)/ 2) - arrayInt;
         transform.position = new Vector3(newX, transform.position.y, newZ);
-
     }
 
 
@@ -445,9 +441,9 @@ public class EnemyController2 : MonoBehaviour
                         distance = (transform.position - player.transform.position).magnitude;
                     }
                 }
-
-                BeInCenter();
                 stateNo = 0;
+                BeInCenter();
+                
 
             }
 
@@ -459,8 +455,51 @@ public class EnemyController2 : MonoBehaviour
 
     public void OnTriggerStayCallBack(Collider other)
     {
-        //playerが視界に入ったら
-        if (other.tag == "player" && stateNo !=3)
+        //enemyが視界に入ったら
+        if (other.tag == "enemy" && other.GetComponent<EnemyController2>().stateNo == 3)
+        {
+            Vector3 rayFrom = transform.position + 1.5f * Vector3.up;
+            Vector3 rayTo = other.transform.position + 1.5f * Vector3.up;
+
+            //Rayの作成
+            Ray ray = new Ray(rayFrom, (rayFrom - rayTo).normalized);
+
+            //Rayの飛ばせる距離
+            float distance = (rayFrom - rayTo).magnitude;
+
+            //Rayが当たったオブジェクトの情報を入れる箱
+            RaycastHit[] hits = Physics.RaycastAll(ray, distance);
+
+            //Rayの可視化
+            Debug.DrawLine(rayFrom, rayTo, Color.red);
+
+            bool isAbleToDetect = true;
+
+            foreach (var obj in hits)
+            {
+                switch (obj.collider.tag)
+                {
+                    case "wall":
+                        isAbleToDetect = false;
+                        break;
+                    case "enemy":
+                        //isAbleToDetect = false;
+                        break;
+                }
+            }
+
+            if (isAbleToDetect)
+            {
+                //Debug.Log("player!");
+                stateNo = 4;
+                destination = other.transform.position;
+                //count = runTime;
+                playerRotation = other.transform.rotation;
+                return;
+            }
+        }
+
+        if (other.tag == "player" && stateNo !=3 && stateNo != 4)
         {
             Vector3 myHead = transform.position + 1.5f * Vector3.up * transform.localScale.y;
             Vector3 playerHead = player.transform.position + 1.5f * Vector3.up;
@@ -502,48 +541,5 @@ public class EnemyController2 : MonoBehaviour
 
             }
         }
-        else if(other.tag == "enemy" && other.GetComponent<EnemyController2>().stateNo == 3)
-        {
-            Vector3 rayFrom = transform.position + 1.5f * Vector3.up;
-            Vector3 rayTo = other.transform.position + 1.5f * Vector3.up;
-
-            //Rayの作成
-            Ray ray = new Ray(rayFrom, (rayFrom - rayTo).normalized);
-
-            //Rayの飛ばせる距離
-            float distance = (rayFrom - rayTo).magnitude;
-
-            //Rayが当たったオブジェクトの情報を入れる箱
-            RaycastHit[] hits = Physics.RaycastAll(ray, distance);
-
-            //Rayの可視化
-            Debug.DrawLine(rayFrom, rayTo, Color.red);
-
-            bool isAbleToDetect = true;
-
-            foreach (var obj in hits)
-            {
-                switch (obj.collider.tag)
-                {
-                    case "wall":
-                        isAbleToDetect = false;
-                        break;
-                    case "enemy":
-                        //isAbleToDetect = false;
-                        break;
-                }
-            }
-
-            if (isAbleToDetect)
-            {
-                //Debug.Log("player!");
-                stateNo = 4;
-                destination = other.transform.position;
-                //count = runTime;
-                playerRotation = other.transform.rotation;
-
-            }
-        }
     }
-
 }

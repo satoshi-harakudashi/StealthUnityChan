@@ -490,7 +490,7 @@ public class EnemyController2 : MonoBehaviour
 
             if (isAbleToDetect)
             {
-                //Debug.Log("player!");
+                Debug.Log("4!");
                 stateNo = 4;
                 destination = other.transform.position;
                 //count = runTime;

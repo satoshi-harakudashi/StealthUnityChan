@@ -49,6 +49,10 @@ public class EnemyController2 : MonoBehaviour
     //待機までに歩くマスの数
     private int walkBeforeWait = 5;
 
+    //
+    private int state3From = 10;
+    private int state3To = 50;
+
     //目的地
     private Vector3 destination;
     //プレイヤーの向き
@@ -105,18 +109,42 @@ public class EnemyController2 : MonoBehaviour
         {
             Walk();
         }
-        else if(stateNo == 2)
+        else if(stateNo == 2 || stateNo == 4)
         {
             Chase();
         }
+        else if(stateNo == 3)
+        {
+            Posing();
+        }
+
+
 
         lastStateNo = stateNo;
     }
 
-    
+    private void Posing()
+    {
+        if(size >= state3To)
+        {
+            stateNo = 0;
+            count = 0;
+        }
+        // アニメーションを開始
+            this.myAnimator.SetInteger("State", 3);
+        count += Time.deltaTime;
+        return;
+    }
 
     private void Wait()
     {
+        if(size > state3From && size < state3To)
+        {
+            stateNo = 3;
+            return;
+        }
+
+
         if(count < waitTime)
         {
             //アニメーションを開始
@@ -183,8 +211,8 @@ public class EnemyController2 : MonoBehaviour
             DirectChase();
         }
 
-        //進行負荷でない場合
-        if(stateNo == 2)
+        //進行不可でない場合
+        if(stateNo == 2 || stateNo == 4)
         {
             if(count < runTime)
             {
@@ -206,7 +234,7 @@ public class EnemyController2 : MonoBehaviour
                 //目的地に近づいたら追跡をやめて、最後にプレイヤーが向いていた方向を見る
                 if((transform.position - destination).magnitude < 1)
                 {
-                    Debug.Log("EndChase!");
+                    //Debug.Log("EndChase!");
                     stateNo = 0;
                     transform.rotation = playerRotation;
                 }
@@ -300,7 +328,14 @@ public class EnemyController2 : MonoBehaviour
         if (wallCo == 2)
         {
             //追跡終了
-            stateNo = 0;
+            if(size > state3From && size < state3To)
+            {
+                stateNo = 3;
+            }
+            else
+            {
+                stateNo = 0;
+            }
             return;
         }
         else
@@ -425,12 +460,10 @@ public class EnemyController2 : MonoBehaviour
     public void OnTriggerStayCallBack(Collider other)
     {
         //playerが視界に入ったら
-        if (other.tag == "player")
+        if (other.tag == "player" && stateNo !=3)
         {
             Vector3 myHead = transform.position + 1.5f * Vector3.up * transform.localScale.y;
             Vector3 playerHead = player.transform.position + 1.5f * Vector3.up;
-
-
             
             //Rayの作成
             Ray ray = new Ray(myHead, (playerHead - myHead).normalized);
@@ -442,7 +475,7 @@ public class EnemyController2 : MonoBehaviour
             RaycastHit[] hits = Physics.RaycastAll(ray, distance);
 
             //Rayの可視化
-            Debug.DrawLine(myHead, playerHead, Color.red);
+            //Debug.DrawLine(myHead, playerHead, Color.red);
 
             bool isAbleToDetect = true;
 
@@ -466,6 +499,48 @@ public class EnemyController2 : MonoBehaviour
                 destination = player.transform.position;
                 //count = runTime;
                 playerRotation = player.transform.rotation;
+
+            }
+        }
+        else if(other.tag == "enemy" && other.GetComponent<EnemyController2>().stateNo == 3)
+        {
+            Vector3 rayFrom = transform.position + 1.5f * Vector3.up;
+            Vector3 rayTo = other.transform.position + 1.5f * Vector3.up;
+
+            //Rayの作成
+            Ray ray = new Ray(rayFrom, (rayFrom - rayTo).normalized);
+
+            //Rayの飛ばせる距離
+            float distance = (rayFrom - rayTo).magnitude;
+
+            //Rayが当たったオブジェクトの情報を入れる箱
+            RaycastHit[] hits = Physics.RaycastAll(ray, distance);
+
+            //Rayの可視化
+            Debug.DrawLine(rayFrom, rayTo, Color.red);
+
+            bool isAbleToDetect = true;
+
+            foreach (var obj in hits)
+            {
+                switch (obj.collider.tag)
+                {
+                    case "wall":
+                        isAbleToDetect = false;
+                        break;
+                    case "enemy":
+                        //isAbleToDetect = false;
+                        break;
+                }
+            }
+
+            if (isAbleToDetect)
+            {
+                //Debug.Log("player!");
+                stateNo = 4;
+                destination = other.transform.position;
+                //count = runTime;
+                playerRotation = other.transform.rotation;
 
             }
         }

@@ -198,7 +198,7 @@ public class WallGenerator3 : MonoBehaviour
             }
             GameObject enemy = Instantiate(enemyPrefab);
 
-            enemy.GetComponent<EnemyController2>().firstSize = 1 + 0.00001f * (i + 1);
+            enemy.GetComponent<EnemyController2>().firstSize = 1 + UnityEngine.Random.Range(0,2) + 0.00001f * (i + 1);
             enemy.GetComponent<EnemyController2>().firstY = 4 * (floorNo - 1);
             enemy.GetComponent<EnemyController2>().size = enemy.GetComponent<EnemyController2>().firstSize;
             enemy.transform.position = new Vector3(2 * enemyPosX - arrayInt, 4 * (floorNo - 1), 2 * enemyPosZ - arrayInt);

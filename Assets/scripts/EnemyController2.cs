@@ -95,6 +95,17 @@ public class EnemyController2 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(unityChanController.isDead || unityChanController.isPose)
+        {
+            myAnimator.SetFloat("AnimationSpeed", 0);
+            return;
+        }
+        else
+        {
+            myAnimator.SetFloat("AnimationSpeed", 1);
+        }
+
+
         if(unityChanController.isClear || unityChanController.isNext)
         {
             Destroy(this.gameObject);
@@ -423,15 +434,16 @@ public class EnemyController2 : MonoBehaviour
 
                 //サイズをリセット
                 size = firstSize;
-                transform.localScale = Vector3.one * size;
-                view.transform.localScale = viewSizeVec;
-                view.transform.localPosition = viewPos;
+                float length = Mathf.Pow(size, 0.5f);
+                transform.localScale = Vector3.one * length;
+                view.transform.localScale = new Vector3(viewSizeVec.x / length, viewSizeVec.y / length, 2);
+                view.transform.localPosition = viewPos / length;
                 //足の速さリセット
                 runSpeed = 1f;
                 runTime = runTimeFirst * 1 / runSpeed;
 
                 float distance = 0;
-                while (distance < 5)
+                while (distance < 5 || distance > 13)
                 {
                     int posX = UnityEngine.Random.Range(0, arrayInt);
                     int posZ = UnityEngine.Random.Range(0, arrayInt);
@@ -462,7 +474,7 @@ public class EnemyController2 : MonoBehaviour
             Vector3 rayTo = other.transform.position + 1.5f * Vector3.up;
 
             //Rayの作成
-            Ray ray = new Ray(rayFrom, (rayFrom - rayTo).normalized);
+            Ray ray = new Ray(rayFrom, -(rayFrom - rayTo).normalized);
 
             //Rayの飛ばせる距離
             float distance = (rayFrom - rayTo).magnitude;

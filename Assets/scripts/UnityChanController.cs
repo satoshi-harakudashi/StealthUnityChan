@@ -25,13 +25,22 @@ public class UnityChanController : MonoBehaviour
     public bool isDead = false;
     //クリアせずに次の階へ行く
     public bool isNext = false;
-
-
+    //ポーズ画面
+    public bool isPose = false;
+    //
+    private float alpha = 0;
+    private float red = 1;
 
     //ゲームオーバーテキスト
     private Text gameOverText;
     //インフォメーションテキスト
     private Text informationText;
+    //ポーズテキスト
+    private Text poseText;
+    //ゲームオーバーパネル
+    private GameObject gameOverPanel;
+
+    private Text resetText;
 
     // Use this for initialization
     void Start()
@@ -39,15 +48,41 @@ public class UnityChanController : MonoBehaviour
         wallGererator = GameObject.Find("WallGenerator");
         
         //アニメータコンポーネントを取得
-        this.myAnimator = GetComponent<Animator>();
+        myAnimator = GetComponentInChildren<Animator>();
         gameOverText = GameObject.Find("GameOverText").GetComponent<Text>();
         informationText = GameObject.Find("InformationText").GetComponent<Text>();
+        poseText = GameObject.Find("PoseText").GetComponent<Text>();
+        gameOverPanel = GameObject.Find("GameOverPanel");
+        resetText = GameObject.Find("ResetText").GetComponent<Text>();
     }
 
     // Update is called once per frame
     void Update()
     {
         informationText.text = floorNo + "階";
+
+        if(isPose)
+        {
+            poseText.text = "Pose!";
+            myAnimator.SetFloat("AnimationSpeed", 0);
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                isPose = false;
+            }
+            return;
+
+        }
+        else
+        {
+            poseText.text = "";
+            //if (Input.GetKeyDown(KeyCode.Space))
+            //{
+            //    isPose = true;
+            //}
+
+        }
+
+
 
 
         if (isClear)
@@ -61,11 +96,27 @@ public class UnityChanController : MonoBehaviour
             return;
         }
         else if (isDead) 
-        { 
-            if(Input.GetKeyDown(KeyCode.Return))
+        {
+            myAnimator.SetFloat("AnimationSpeed", 0);
+
+            if(alpha < 1)
             {
-                SceneManager.LoadScene("SampleScene");
+                alpha += 0.0005f;
+                gameOverPanel.GetComponent<Image>().color = new Color(1,0,0,alpha);
             }
+            else
+            {
+                if(red > 0)
+                {
+                    red -= 0.0005f;
+                    resetText.color = new Color(red, 0, 0, 1);
+                }
+                if(Input.GetKeyDown(KeyCode.Return))
+                {
+                    SceneManager.LoadScene("OpeningScene");
+                }
+            }
+            
             return; 
         }
         else if (isNext)
@@ -104,7 +155,7 @@ public class UnityChanController : MonoBehaviour
         newZ = 2 * newZ - arrayInt;
         transform.position = new Vector3(newX, transform.position.y, newZ);
 
-        myAnimator.SetFloat("Speed", 0);
+        myAnimator.SetInteger("State", 0);
     }
 
     private void GoToNextRoom()
@@ -113,7 +164,8 @@ public class UnityChanController : MonoBehaviour
         if(count < 0.25f)
         {
             //走るアニメーションを開始
-            this.myAnimator.SetFloat("Speed", 1);
+            myAnimator.SetInteger("State", 2);
+            myAnimator.SetFloat("AnimationSpeed", 2);
 
             transform.position += runSpeedPerSec * Time.deltaTime * runDirection;
             count += Time.deltaTime;
@@ -152,7 +204,8 @@ public class UnityChanController : MonoBehaviour
             else
             {
                 //走るアニメーションを終了
-                this.myAnimator.SetFloat("Speed", 0);
+                myAnimator.SetInteger("State", 0);
+                myAnimator.SetFloat("AnimationSpeed", 1);
             }
             newX = 2 * newX - arrayInt;
             newZ = 2 * newZ - arrayInt;
@@ -165,8 +218,21 @@ public class UnityChanController : MonoBehaviour
         if(!isClear && other.tag == "enemy")
         {
             //ゲームオーバー
-            
-            gameOverText.GetComponent<Text>().text = "GAME OVER";
+            string ordinalNumberText = "th";
+            if(floorNo%10 == 1)
+            {
+                ordinalNumberText = "st";
+            }
+            else if(floorNo%10 == 2)
+            {
+                ordinalNumberText = "nd";
+            }
+            else if(floorNo%10 == 3)
+            {
+                ordinalNumberText = "rd";
+            }
+
+            gameOverText.GetComponent<Text>().text = "You were killed on " + floorNo + ordinalNumberText +" floor";
             isDead = true;
 
             

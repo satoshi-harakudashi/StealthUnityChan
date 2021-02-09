@@ -182,27 +182,43 @@ public class WallGenerator3 : MonoBehaviour
             if (!wallArray[playerPosX, playerPosZ]) { isAbleToPut = true; }
         }
 
+        player = GameObject.Find("Player");
+        player.transform.position = new Vector3(2 * playerPosX - arrayInt, 4 * (floorNo - 1), 2 * playerPosZ - arrayInt);
+        player.GetComponent<UnityChanController>().arrayInt = arrayInt;
+        player.GetComponent<UnityChanController>().floorNo = floorNo;
+
         for (int i = 0; i < arrayInt - 9; i++)
         {
             int enemyPosX = 0;
             int enemyPosZ = 0;
             isAbleToPut = false;
-            while (!isAbleToPut)
-            {
-                enemyPosX = UnityEngine.Random.Range(0, arrayInt);
-                enemyPosZ = UnityEngine.Random.Range(0, arrayInt);
-                if (!wallArray[enemyPosX, enemyPosZ] && (enemyPosX < playerPosX - 3 || enemyPosX > playerPosX + 3 || enemyPosZ < playerPosZ - 3 || enemyPosZ > playerPosZ + 3))
-                {
-                    isAbleToPut = true;
-                }
-            }
             GameObject enemy = Instantiate(enemyPrefab);
-
-            enemy.GetComponent<EnemyController2>().firstSize = 1 + UnityEngine.Random.Range(0,2) + 0.00001f * (i + 1);
+            enemy.GetComponent<EnemyController2>().firstSize = 1 + UnityEngine.Random.Range(0,2) + 0.001f * (i + 1);
             enemy.GetComponent<EnemyController2>().firstY = 4 * (floorNo - 1);
             enemy.GetComponent<EnemyController2>().size = enemy.GetComponent<EnemyController2>().firstSize;
-            enemy.transform.position = new Vector3(2 * enemyPosX - arrayInt, 4 * (floorNo - 1), 2 * enemyPosZ - arrayInt);
+            float distance = 0;
+            while (distance < 8 || distance > 10 + arrayInt/2)
+            {
+                int posX = UnityEngine.Random.Range(0, arrayInt);
+                int posZ = UnityEngine.Random.Range(0, arrayInt);
+                enemy.transform.position = new Vector3(2 * posX - arrayInt, 4 * (floorNo - 1), 2 * posZ - arrayInt);
+                if (!wallArray[posX, posZ])
+                {
+                    distance = (enemy.transform.position - player.transform.position).magnitude;
+                }
+            }
 
+
+            //while (!isAbleToPut)
+            //{
+            //    enemyPosX = UnityEngine.Random.Range(0, arrayInt);
+            //    enemyPosZ = UnityEngine.Random.Range(0, arrayInt);
+            //    if (!wallArray[enemyPosX, enemyPosZ] && (enemyPosX < playerPosX - 3 || enemyPosX > playerPosX + 3 || enemyPosZ < playerPosZ - 3 || enemyPosZ > playerPosZ + 3))
+            //    {
+            //        isAbleToPut = true;
+            //    }
+            //}
+            
             enemy.transform.localScale = Vector3.one * Mathf.Pow(enemy.GetComponent<EnemyController2>().size, 0.5f);
         }
 
@@ -220,12 +236,7 @@ public class WallGenerator3 : MonoBehaviour
 
         }
 
-        player = GameObject.Find("Player");
-        player.transform.position = new Vector3(2 * playerPosX - arrayInt, 4 * (floorNo - 1), 2 * playerPosZ - arrayInt);
-        player.GetComponent<UnityChanController>().arrayInt = arrayInt;
-        player.GetComponent<UnityChanController>().floorNo = floorNo;
-
-
+        
         GameObject stair = Instantiate(stairPrefab);
         stair.transform.position = new Vector3(2 * stairPosX - arrayInt + 1, 4 * (floorNo - 1), 2 * stairPosZ - arrayInt - 1);
 

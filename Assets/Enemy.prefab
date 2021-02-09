@@ -7516,6 +7516,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   view: {fileID: 0}
+  material: []
   stateNo: 0
   firstSize: 0
   size: 0

@@ -75,10 +75,10 @@ public class UnityChanController : MonoBehaviour
         else
         {
             poseText.text = "";
-            //if (Input.GetKeyDown(KeyCode.Space))
-            //{
-            //    isPose = true;
-            //}
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                isPose = true;
+            }
 
         }
 
@@ -111,12 +111,12 @@ public class UnityChanController : MonoBehaviour
                     red -= 0.0005f;
                     resetText.color = new Color(red, 0, 0, 1);
                 }
-                if(Input.GetKeyDown(KeyCode.Return))
-                {
-                    SceneManager.LoadScene("OpeningScene");
-                }
             }
-            
+            if (Input.GetKeyDown(KeyCode.Return))
+            {
+                SceneManager.LoadScene("OpeningScene");
+            }
+
             return; 
         }
         else if (isNext)
@@ -128,7 +128,7 @@ public class UnityChanController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Return))
         {
-            isNext = true;            
+            //isNext = true;            
         }
         else
         {
@@ -219,7 +219,7 @@ public class UnityChanController : MonoBehaviour
         {
             //ゲームオーバー
             string ordinalNumberText = "th";
-            if(floorNo%10 == 1)
+            if(floorNo%10 == 1 && floorNo%100 != 11)
             {
                 ordinalNumberText = "st";
             }

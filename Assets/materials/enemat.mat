@@ -98,6 +98,7 @@ Material:
         m_Scale: {x: 1, y: 1}
         m_Offset: {x: 0, y: 0}
     m_Floats:
+    - Vector1_909DB98A: 0
     - _AlphaClip: 0
     - _Blend: 0
     - _BumpScale: 1
@@ -115,13 +116,16 @@ Material:
     - _ReceiveShadows: 1
     - _SPECULAR_IOR: 1.5
     - _SPECULAR_ROUGHNESS: 0
+    - _Size: 1.001
     - _Smoothness: 0.5
     - _SmoothnessTextureChannel: 0
     - _SpecularHighlights: 1
     - _SrcBlend: 1
+    - _StateNo: 0
     - _Surface: 0
     - _WorkflowMode: 1
     - _ZWrite: 1
+    - sizeInt: 0
     m_Colors:
     - Vector2_AEEFC526: {r: 0, g: 0, b: 0, a: 0}
     - _BASE_COLOR: {r: 0, g: 0, b: 0, a: 0}

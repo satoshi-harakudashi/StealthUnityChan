@@ -19,6 +19,7 @@ public class EnemyController2 : MonoBehaviour
     static UnityChanController unityChanController;
     //アニメーションするためのコンポーネントを入れる
     private Animator myAnimator;
+    public List<Material> material = new List<Material>();
 
     //状態変数　0:待機、1:徘徊、2:追跡
     public int stateNo = 0;
@@ -81,6 +82,18 @@ public class EnemyController2 : MonoBehaviour
             unityChanController = player.GetComponent<UnityChanController>();
         }
 
+        //すべてのenemyの体のmaterial取得
+        List<GameObject> allChildren = new List<GameObject>();
+        GetChildren(gameObject, ref allChildren);
+        for(int i = 0; i < allChildren.Count; i++)
+        {
+            if(allChildren[i].tag != "view")
+            {
+                material.Add(allChildren[i].GetComponent<MeshRenderer>().material);
+            }
+        }
+
+
         //アニメータコンポーネントを取得
         myAnimator = GetComponentInChildren<Animator>();
 
@@ -95,6 +108,15 @@ public class EnemyController2 : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        for(int i = 0; i < material.Count; i ++)
+        {
+            material[i].SetFloat("_Size",size);
+            material[i].SetInt("_StateNo", stateNo);
+        }
+
+ 
+
+
         if(unityChanController.isDead || unityChanController.isPose)
         {
             myAnimator.SetFloat("AnimationSpeed", 0);
@@ -120,7 +142,7 @@ public class EnemyController2 : MonoBehaviour
         {
             Walk();
         }
-        else if(stateNo == 2 || stateNo == 4)
+        else if(stateNo == 2 )//|| stateNo == 4)
         {
             Chase();
         }
@@ -133,6 +155,22 @@ public class EnemyController2 : MonoBehaviour
 
         lastStateNo = stateNo;
     }
+
+    private void GetChildren(GameObject obj, ref List<GameObject> allChildren)
+    {
+        Transform children = obj.GetComponentInChildren<Transform>();
+        //子要素がいなければ終了
+        if (children.childCount == 0)
+        {
+            return;
+        }
+        foreach (Transform ob in children)
+        {
+            allChildren.Add(ob.gameObject);
+            GetChildren(ob.gameObject, ref allChildren);
+        }
+    }
+
 
     private void Posing()
     {
@@ -149,14 +187,19 @@ public class EnemyController2 : MonoBehaviour
 
     private void Wait()
     {
-        if(size > state3From && size < state3To)
+        //if(size > state3From && size < state3To)
+        //{
+        //    stateNo = 3;
+        //    return;
+        //}
+
+        if((transform.position - player.transform.position).magnitude > 10 + arrayInt/2)
         {
-            stateNo = 3;
-            return;
+            Warp();
         }
 
 
-        if(count < waitTime)
+        if (count < waitTime)
         {
             //アニメーションを開始
             this.myAnimator.SetInteger("State", 0);
@@ -223,7 +266,7 @@ public class EnemyController2 : MonoBehaviour
         }
 
         //進行不可でない場合
-        if(stateNo == 2 || stateNo == 4)
+        if(stateNo == 2 )//|| stateNo == 4)
         {
             if(count < runTime)
             {
@@ -346,10 +389,10 @@ public class EnemyController2 : MonoBehaviour
         }
 
 
-        if (size > state3From && size < state3To)
-        {
-            stateNo = 3;
-        }
+        //if (size > state3From && size < state3To)
+        //{
+        //    stateNo = 3;
+        //}
     }
 
     private void DirectRand()
@@ -399,7 +442,20 @@ public class EnemyController2 : MonoBehaviour
         transform.position = new Vector3(newX, transform.position.y, newZ);
     }
 
-
+    private void Warp()
+    {
+        float distance = 0;
+        while (distance < 10 || distance > 12 + arrayInt/2)
+        {
+            int posX = UnityEngine.Random.Range(0, arrayInt);
+            int posZ = UnityEngine.Random.Range(0, arrayInt);
+            transform.position = new Vector3(2 * posX - arrayInt, firstY, 2 * posZ - arrayInt);
+            if (!wallGenerator.wallArray[posX, posZ])
+            {
+                distance = (transform.position - player.transform.position).magnitude;
+            }
+        }
+    }
     private void OnTriggerStay(Collider other)
     {
         if(view == null)
@@ -442,17 +498,7 @@ public class EnemyController2 : MonoBehaviour
                 runSpeed = 1f;
                 runTime = runTimeFirst * 1 / runSpeed;
 
-                float distance = 0;
-                while (distance < 5 || distance > 13)
-                {
-                    int posX = UnityEngine.Random.Range(0, arrayInt);
-                    int posZ = UnityEngine.Random.Range(0, arrayInt);
-                    transform.position = new Vector3(2 * posX - arrayInt, firstY, 2 * posZ - arrayInt);
-                    if (!wallGenerator.wallArray[posX, posZ])
-                    {
-                        distance = (transform.position - player.transform.position).magnitude;
-                    }
-                }
+                Warp();
                 stateNo = 0;
                 BeInCenter();
                 
@@ -462,54 +508,52 @@ public class EnemyController2 : MonoBehaviour
         }
     }
 
-
-
+    
 
     public void OnTriggerStayCallBack(Collider other)
     {
         //enemyが視界に入ったら
-        if (other.tag == "enemy" && other.GetComponent<EnemyController2>().stateNo == 3)
-        {
-            Vector3 rayFrom = transform.position + 1.5f * Vector3.up;
-            Vector3 rayTo = other.transform.position + 1.5f * Vector3.up;
+        //if (other.tag == "enemy" && other.GetComponent<EnemyController2>().stateNo == 3)
+        //{
+        //    Vector3 rayFrom = transform.position + 1.5f * Vector3.up;
+        //    Vector3 rayTo = other.transform.position + 1.5f * Vector3.up;
 
-            //Rayの作成
-            Ray ray = new Ray(rayFrom, -(rayFrom - rayTo).normalized);
+        //    //Rayの作成
+        //    Ray ray = new Ray(rayFrom, -(rayFrom - rayTo).normalized);
 
-            //Rayの飛ばせる距離
-            float distance = (rayFrom - rayTo).magnitude;
+        //    //Rayの飛ばせる距離
+        //    float distance = (rayFrom - rayTo).magnitude;
 
-            //Rayが当たったオブジェクトの情報を入れる箱
-            RaycastHit[] hits = Physics.RaycastAll(ray, distance);
+        //    //Rayが当たったオブジェクトの情報を入れる箱
+        //    RaycastHit[] hits = Physics.RaycastAll(ray, distance);
 
-            //Rayの可視化
-            Debug.DrawLine(rayFrom, rayTo, Color.red);
+        //    //Rayの可視化
+        //    Debug.DrawLine(rayFrom, rayTo, Color.red);
 
-            bool isAbleToDetect = true;
+        //    bool isAbleToDetect = true;
 
-            foreach (var obj in hits)
-            {
-                switch (obj.collider.tag)
-                {
-                    case "wall":
-                        isAbleToDetect = false;
-                        break;
-                    case "enemy":
-                        //isAbleToDetect = false;
-                        break;
-                }
-            }
+        //    foreach (var obj in hits)
+        //    {
+        //        switch (obj.collider.tag)
+        //        {
+        //            case "wall":
+        //                isAbleToDetect = false;
+        //                break;
+        //            case "enemy":
+        //                //isAbleToDetect = false;
+        //                break;
+        //        }
+        //    }
 
-            if (isAbleToDetect)
-            {
-                Debug.Log("4!");
-                stateNo = 4;
-                destination = other.transform.position;
-                //count = runTime;
-                playerRotation = other.transform.rotation;
-                return;
-            }
-        }
+        //    if (isAbleToDetect)
+        //    {
+        //        stateNo = 4;
+        //        destination = other.transform.position;
+        //        //count = runTime;
+        //        playerRotation = other.transform.rotation;
+        //        return;
+        //    }
+        //}
 
         if (other.tag == "player" && stateNo !=3 && stateNo != 4)
         {

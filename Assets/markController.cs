@@ -25,10 +25,10 @@ public class markController : MonoBehaviour
         {
             Destroy(this.gameObject);
         }
-
-        count += Time.deltaTime;
-        material.SetFloat("_Count",count);
-
-
+        else if(!uniCon.isDead)
+        {
+            count += Time.deltaTime;
+            material.SetFloat("_Count",count);
+        }
     }
 }

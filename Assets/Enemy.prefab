@@ -7515,9 +7515,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d46b63b849384024cb04714cf4579abc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  destinationMarkPrefab: {fileID: 3835500784256177402, guid: 093fb9fa6d4d6e04cb728a2164b56981,
+    type: 3}
   view: {fileID: 0}
   material: []
   stateNo: 0
+  runTimeFirst: 0.6
+  enemyNo: 1
   firstSize: 0
   size: 0
   count: 0

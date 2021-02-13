@@ -8,7 +8,8 @@ public class EnemyController2 : MonoBehaviour
     //待機状態、徘徊状態、追跡状態
 
 
-
+    //
+    public GameObject destinationMarkPrefab;
     //wallgenerator
     static WallGenerator3 wallGenerator;
     //player
@@ -25,12 +26,16 @@ public class EnemyController2 : MonoBehaviour
     public int stateNo = 0;
     //前回の状態変数
     private int lastStateNo = 0;
+    //stateNo == 5の時に使う状態
+    private int stateNo5 = 0;
+    //markを置いた個数をカウント
+    private int markCo = 0;
 
     //走行速度
     private float runSpeed = 1;
     
     //追跡中の1回の移動時間(初期)
-    private float runTimeFirst = 0.6f;
+    public float runTimeFirst = 0.6f;
     //追跡中の1回の移動時間;
     private float runTime;
     //通常の1回の移動時間
@@ -38,6 +43,8 @@ public class EnemyController2 : MonoBehaviour
     //待機時間
     private float waitTime = 3f;
 
+    //階層内の敵の総数
+    public int enemyNo = 1;
     //初期サイズ
     public float firstSize = 1;
     //サイズ
@@ -56,6 +63,9 @@ public class EnemyController2 : MonoBehaviour
 
     //目的地
     private Vector3 destination;
+    //stae5のみ使う目的地リスト
+    private List<Vector3> destinationList = new List<Vector3>();
+    
     //プレイヤーの向き
     private Quaternion playerRotation;
     //方向の箱
@@ -150,10 +160,121 @@ public class EnemyController2 : MonoBehaviour
         {
             Posing();
         }
+        else if(stateNo == 5)
+        {
+            Attack();
+        }
 
 
 
         lastStateNo = stateNo;
+    }
+
+    private void Attack()
+    {
+        Debug.Log("state5:"+stateNo5 + " List:"+destinationList.Count);
+
+
+        //目的地を配置する時間
+        float putTime = 0.1f;
+
+        if (stateNo5 == 0)
+        {
+            myAnimator.SetInteger("State", 3);
+            #region 目的地リストを作る
+            //最初はplayerの位置を加える
+            destinationList.Add(player.transform.position);
+
+            //リストが空または最後の要素との距離が遠い限り、
+            while((destinationList[destinationList.Count-1]-transform.position).magnitude > 3)
+            {
+                //Xの距離
+                float X = (destinationList[destinationList.Count - 1] - transform.position).x; 
+                //Zの距離
+                float Z = (destinationList[destinationList.Count - 1] - transform.position).z;
+
+                Vector3 dir = Vector3.zero;
+                if(Mathf.Abs(X) > Mathf.Abs(Z) && X > 0)
+                {
+                    dir = Vector3.left;
+                }
+                else if (Mathf.Abs(X) > Mathf.Abs(Z) && X <= 0)
+                {
+                    dir = Vector3.right;
+                }
+                else if (Mathf.Abs(X) <= Mathf.Abs(Z) && Z > 0)
+                {
+                    dir = Vector3.back;
+                }
+                else if (Mathf.Abs(X) <= Mathf.Abs(Z) && Z <= 0)
+                {
+                    dir = Vector3.forward;
+                }
+
+                destinationList.Add(destinationList[destinationList.Count - 1] + 2 * dir);
+
+            }
+
+            #endregion
+            stateNo5 += 1;
+            markCo = 0;
+        }
+        if(stateNo5 == 1)
+        {
+            #region 目的地を置いてputTimeだけ待機(リストの要素数だけ)
+            if (count > putTime)
+            {
+                //markを作る
+                GameObject mark = Instantiate(destinationMarkPrefab);
+                //markをmarkCoの位置に置く
+                mark.transform.position = destinationList[markCo];
+                //countをリセット
+                count = 0;
+                if (markCo < destinationList.Count - 1)
+                {
+                    markCo += 1;
+                }
+                else
+                {
+                    //向きを変える(リストの最後が直近の目的地)
+                    transform.LookAt(destinationList[destinationList.Count - 1]);
+                    //置き終わったので次へ
+                    stateNo5 += 1;
+                }
+            }
+            else
+            {
+                count += Time.deltaTime;
+            }
+            #endregion
+        }
+        if(stateNo5 == 2)
+        {
+            myAnimator.SetInteger("State", 2);
+            #region
+            if(count < runTime)
+            {
+                //前進（直近の目的地へ）
+                transform.position += 2 * Time.deltaTime / runTime * transform.forward;
+                count += Time.deltaTime;
+            }
+            else
+            {
+                //直近の目的地をリストから破棄（リストの最後）
+                destinationList.Remove(destinationList[destinationList.Count - 1]);
+                BeInCenter();
+                if(destinationList.Count > 0)
+                {
+                    transform.LookAt(destinationList[destinationList.Count - 1]);
+                }
+                else
+                {
+                    stateNo5 = 0;
+                }
+
+            }
+            #endregion
+        }
     }
 
     private void GetChildren(GameObject obj, ref List<GameObject> allChildren)
@@ -193,7 +314,7 @@ public class EnemyController2 : MonoBehaviour
         //    return;
         //}
 
-        if((transform.position - player.transform.position).magnitude > 10 + arrayInt/2)
+        if((transform.position - player.transform.position).magnitude > 25)
         {
             Warp();
         }
@@ -445,7 +566,7 @@ public class EnemyController2 : MonoBehaviour
     private void Warp()
     {
         float distance = 0;
-        while (distance < 10 || distance > 12 + arrayInt/2)
+        while (distance < 10 || distance > 15 + enemyNo / 3)
         {
             int posX = UnityEngine.Random.Range(0, arrayInt);
             int posZ = UnityEngine.Random.Range(0, arrayInt);
@@ -463,13 +584,21 @@ public class EnemyController2 : MonoBehaviour
             return;
         }
 
+        if(other.tag == "wall" || other.tag == "mark")
+        {
+            Destroy(other.gameObject);
+        }
+
+       
+
         //enemy同士でぶつかったとき、
         if (other.tag == "enemy")
         {
-            //自分のほうが大きいとき、または同じ大きさで自分のx座標が小さいとき
-            if (transform.localScale.y > other.transform.localScale.y
+            //相手がstateNo5でないならば、自分のほうが大きいとき、または同じ大きさで自分のx座標が小さいとき
+            if (other.GetComponent<EnemyController2>().stateNo !=5 &&
+                (transform.localScale.y > other.transform.localScale.y
                 || (Mathf.Abs(transform.localScale.y - other.transform.localScale.y) < Mathf.Epsilon && transform.position.x < other.transform.position.x)
-                || (Mathf.Abs(transform.localScale.y - other.transform.localScale.y) < Mathf.Epsilon && transform.position.x == other.transform.position.x && transform.position.z < other.transform.position.z))
+                || (Mathf.Abs(transform.localScale.y - other.transform.localScale.y) < Mathf.Epsilon && transform.position.x == other.transform.position.x && transform.position.z < other.transform.position.z)))
             {
                 //巨大化
                 size += other.GetComponent<EnemyController2>().size;
@@ -483,9 +612,10 @@ public class EnemyController2 : MonoBehaviour
                 runSpeed += 0.01f;
                 runTime = runTimeFirst * 1 / runSpeed;
             }
-            else if (transform.localScale.y < other.transform.localScale.y
+            else if (stateNo5 != 5 &&
+                (transform.localScale.y < other.transform.localScale.y
                 || (Mathf.Abs(transform.localScale.y - other.transform.localScale.y) < Mathf.Epsilon && transform.position.x > other.transform.position.x)
-                || (Mathf.Abs(transform.localScale.y - other.transform.localScale.y) < Mathf.Epsilon && transform.position.x == other.transform.position.x && transform.position.z > other.transform.position.z))
+                || (Mathf.Abs(transform.localScale.y - other.transform.localScale.y) < Mathf.Epsilon && transform.position.x == other.transform.position.x && transform.position.z > other.transform.position.z)))
             {
 
                 //サイズをリセット
@@ -512,6 +642,10 @@ public class EnemyController2 : MonoBehaviour
 
     public void OnTriggerStayCallBack(Collider other)
     {
+        if(stateNo == 5)
+        {
+            return;
+        }
         //enemyが視界に入ったら
         //if (other.tag == "enemy" && other.GetComponent<EnemyController2>().stateNo == 3)
         //{
@@ -557,7 +691,7 @@ public class EnemyController2 : MonoBehaviour
 
         if (other.tag == "player" && stateNo !=3 && stateNo != 4)
         {
-            Vector3 myHead = transform.position + 1.5f * Vector3.up * transform.localScale.y;
+            Vector3 myHead = transform.position + Vector3.up;//1.5f * Vector3.up * transform.localScale.y;
             Vector3 playerHead = player.transform.position + 1.5f * Vector3.up;
             
             //Rayの作成

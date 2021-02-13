@@ -187,17 +187,34 @@ public class WallGenerator3 : MonoBehaviour
         player.GetComponent<UnityChanController>().arrayInt = arrayInt;
         player.GetComponent<UnityChanController>().floorNo = floorNo;
 
-        for (int i = 0; i < arrayInt - 9; i++)
+
+        //n階のenemyの総数(15で頭打ち)
+        int enemyNo = Mathf.Min(arrayInt - 9, 15);
+        //enemyの初期1コマ移動時間(15階まで0.6ms)
+        float runTimeFirst = 0.6f;//Mathf.Min(0.6f, -0.01f * (arrayInt - 9) + 0.615f) ;
+
+        for (int i = 0; i < enemyNo; i++)
         {
-            int enemyPosX = 0;
-            int enemyPosZ = 0;
-            isAbleToPut = false;
+            
             GameObject enemy = Instantiate(enemyPrefab);
-            enemy.GetComponent<EnemyController2>().firstSize = 1 + UnityEngine.Random.Range(0,2) + 0.001f * (i + 1);
-            enemy.GetComponent<EnemyController2>().firstY = 4 * (floorNo - 1);
-            enemy.GetComponent<EnemyController2>().size = enemy.GetComponent<EnemyController2>().firstSize;
+            EnemyController2 eneCon = enemy.GetComponent<EnemyController2>();
+            eneCon.firstSize = 1 + UnityEngine.Random.Range(0,2) + 0.001f * (i + 1);
+            eneCon.firstY = 4 * (floorNo - 1);
+            eneCon.size = eneCon.firstSize;
+            eneCon.enemyNo = enemyNo;
+            eneCon.runTimeFirst = runTimeFirst;
+            if((i+1) % 10 ==0)
+            {
+                eneCon.stateNo = 5;
+            }
+            else
+            {
+                eneCon.count = UnityEngine.Random.Range(0, 100) / 100;
+            }
+
+
             float distance = 0;
-            while (distance < 8 || distance > 10 + arrayInt/2)
+            while (distance < 8 || distance > 15 + enemyNo/3)
             {
                 int posX = UnityEngine.Random.Range(0, arrayInt);
                 int posZ = UnityEngine.Random.Range(0, arrayInt);
@@ -209,17 +226,7 @@ public class WallGenerator3 : MonoBehaviour
             }
 
 
-            //while (!isAbleToPut)
-            //{
-            //    enemyPosX = UnityEngine.Random.Range(0, arrayInt);
-            //    enemyPosZ = UnityEngine.Random.Range(0, arrayInt);
-            //    if (!wallArray[enemyPosX, enemyPosZ] && (enemyPosX < playerPosX - 3 || enemyPosX > playerPosX + 3 || enemyPosZ < playerPosZ - 3 || enemyPosZ > playerPosZ + 3))
-            //    {
-            //        isAbleToPut = true;
-            //    }
-            //}
-            
-            enemy.transform.localScale = Vector3.one * Mathf.Pow(enemy.GetComponent<EnemyController2>().size, 0.5f);
+            enemy.transform.localScale = Vector3.one * Mathf.Pow(eneCon.size, 0.5f);
         }
 
         int stairPosX = 0;

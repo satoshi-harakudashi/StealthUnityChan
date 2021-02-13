@@ -128,7 +128,7 @@ public class UnityChanController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.Return))
         {
-            //isNext = true;            
+            isNext = true;            
         }
         else
         {

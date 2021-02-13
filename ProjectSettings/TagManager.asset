@@ -10,6 +10,7 @@ TagManager:
   - wall
   - goal
   - roof
+  - mark
   layers:
   - Default
   - TransparentFX

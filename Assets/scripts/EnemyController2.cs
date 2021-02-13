@@ -37,7 +37,7 @@ public class EnemyController2 : MonoBehaviour
     //追跡中の1回の移動時間(初期)
     public float runTimeFirst = 0.6f;
     //追跡中の1回の移動時間;
-    private float runTime;
+    public float runTime;
     //通常の1回の移動時間
     private float walkTime = 2f;
     //待機時間
@@ -65,6 +65,7 @@ public class EnemyController2 : MonoBehaviour
     private Vector3 destination;
     //stae5のみ使う目的地リスト
     private List<Vector3> destinationList = new List<Vector3>();
+    private List<GameObject> markList = new List<GameObject>();
     
     //プレイヤーの向き
     private Quaternion playerRotation;
@@ -172,7 +173,7 @@ public class EnemyController2 : MonoBehaviour
 
     private void Attack()
     {
-        Debug.Log("state5:"+stateNo5 + " List:"+destinationList.Count);
+        
 
 
         //目的地を配置する時間
@@ -183,7 +184,12 @@ public class EnemyController2 : MonoBehaviour
             myAnimator.SetInteger("State", 3);
             #region 目的地リストを作る
             //最初はplayerの位置を加える
-            destinationList.Add(player.transform.position);
+
+            float px = 2 * Mathf.RoundToInt((player.transform.position.x + arrayInt) / 2) - arrayInt;
+            float py = player.transform.position.y;
+            float pz = 2 * Mathf.RoundToInt((player.transform.position.z + arrayInt) / 2) - arrayInt;
+
+            destinationList.Add(new Vector3(px,py,pz));
 
             //リストが空または最後の要素との距離が遠い限り、
             while((destinationList[destinationList.Count-1]-transform.position).magnitude > 3)
@@ -226,18 +232,22 @@ public class EnemyController2 : MonoBehaviour
             {
                 //markを作る
                 GameObject mark = Instantiate(destinationMarkPrefab);
-                //markをmarkCoの位置に置く
-                mark.transform.position = destinationList[markCo];
+                //markをlistの最初の位置に置く
+                mark.transform.position = destinationList[0];
+                //listの最初を削除→リストの最初が変わる
+                destinationList.Remove(destinationList[0]);
+                //marklistにmark追加
+                markList.Add(mark);
                 //countをリセット
                 count = 0;
-                if (markCo < destinationList.Count - 1)
+                if (destinationList.Count > 0)
                 {
-                    markCo += 1;
+
                 }
                 else
                 {
-                    //向きを変える(リストの最後が直近の目的地)
-                    transform.LookAt(destinationList[destinationList.Count - 1]);
+                    //向きを変える(リストの最初が直近の目的地)
+                    transform.LookAt(markList[markList.Count-1].transform);
                     //置き終わったので次へ
                     stateNo5 += 1;
                 }
@@ -260,12 +270,20 @@ public class EnemyController2 : MonoBehaviour
             }
             else
             {
-                //直近の目的地をリストから破棄（リストの最後）
-                destinationList.Remove(destinationList[destinationList.Count - 1]);
+                count = 0;
+                Debug.Log("state5:" + stateNo5 + " List:" + destinationList.Count);
+                
                 BeInCenter();
-                if(destinationList.Count > 0)
+                //リストの最後のmarkを削除
+                Destroy(markList[markList.Count - 1].gameObject);
+
+                //直近の目的地をリストから破棄（リストの最後）
+                markList.Remove(markList[markList.Count - 1]);
+
+                
+                if(markList.Count > 0)
                 {
-                    transform.LookAt(destinationList[destinationList.Count - 1]);
+                    transform.LookAt(markList[markList.Count - 1].transform);
                 }
                 else
                 {
@@ -584,18 +602,33 @@ public class EnemyController2 : MonoBehaviour
             return;
         }
 
-        if(other.tag == "wall" || other.tag == "mark")
+        if(stateNo == 5 && other.tag == "wall" )
         {
-            Destroy(other.gameObject);
+            
+
+            int X = Mathf.RoundToInt((other.transform.position.x + arrayInt) / 2);
+            int Z = Mathf.RoundToInt((other.transform.position.z + arrayInt) / 2);
+
+            if(X > 0 && X < arrayInt-1 && Z > 0 && Z < arrayInt -1)
+            {
+                Destroy(other.gameObject);
+                wallGenerator.wallArray[X, Z] = false;
+            }
+
         }
 
-       
+
 
         //enemy同士でぶつかったとき、
         if (other.tag == "enemy")
         {
-            //相手がstateNo5でないならば、自分のほうが大きいとき、または同じ大きさで自分のx座標が小さいとき
-            if (other.GetComponent<EnemyController2>().stateNo !=5 &&
+            if(stateNo == 5 && other.GetComponent<EnemyController2>().stateNo ==5)
+            {
+                return;
+            }
+
+            //相手がstateNo5でないならば、または、自分のほうが大きいとき、または同じ大きさで自分のx座標が小さいとき
+            if ((stateNo == 5 && other.GetComponent<EnemyController2>().stateNo !=5) ||
                 (transform.localScale.y > other.transform.localScale.y
                 || (Mathf.Abs(transform.localScale.y - other.transform.localScale.y) < Mathf.Epsilon && transform.position.x < other.transform.position.x)
                 || (Mathf.Abs(transform.localScale.y - other.transform.localScale.y) < Mathf.Epsilon && transform.position.x == other.transform.position.x && transform.position.z < other.transform.position.z)))
@@ -609,10 +642,10 @@ public class EnemyController2 : MonoBehaviour
                 view.transform.localScale = new Vector3(viewSizeVec.x/length,viewSizeVec.y/length,2);
                 view.transform.localPosition = viewPos/length;
 
-                runSpeed += 0.01f;
+                runSpeed = 1 + (size-1)* 0.03f;
                 runTime = runTimeFirst * 1 / runSpeed;
             }
-            else if (stateNo5 != 5 &&
+            else if ((stateNo5 != 5 && other.GetComponent<EnemyController2>().stateNo ==5) ||
                 (transform.localScale.y < other.transform.localScale.y
                 || (Mathf.Abs(transform.localScale.y - other.transform.localScale.y) < Mathf.Epsilon && transform.position.x > other.transform.position.x)
                 || (Mathf.Abs(transform.localScale.y - other.transform.localScale.y) < Mathf.Epsilon && transform.position.x == other.transform.position.x && transform.position.z > other.transform.position.z)))

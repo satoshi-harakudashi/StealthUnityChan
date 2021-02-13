@@ -203,9 +203,12 @@ public class WallGenerator3 : MonoBehaviour
             eneCon.size = eneCon.firstSize;
             eneCon.enemyNo = enemyNo;
             eneCon.runTimeFirst = runTimeFirst;
-            if((i+1) % 10 ==0)
+            if(i == 9)
             {
                 eneCon.stateNo = 5;
+                eneCon.size = floorNo - 9;
+                float runSpeed = 1 + (eneCon.size - 1) * 0.03f;
+                eneCon.runTime = runTimeFirst * 1 / runSpeed;
             }
             else
             {

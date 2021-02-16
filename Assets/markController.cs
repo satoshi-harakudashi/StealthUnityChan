@@ -5,7 +5,7 @@ using UnityEngine;
 public class markController : MonoBehaviour
 {
     Material material;
-    float count = 0;
+    public float count;
     static UnityChanController uniCon;
 
     // Start is called before the first frame update

@@ -30,7 +30,8 @@ public class EnemyController2 : MonoBehaviour
     private int stateNo5 = 0;
     //markを置いた個数をカウント
     private int markCo = 0;
-
+    //
+    private bool isPutting;
     //走行速度
     private float runSpeed = 1;
     
@@ -173,92 +174,99 @@ public class EnemyController2 : MonoBehaviour
 
     private void Attack()
     {
-        
-
-
         //目的地を配置する時間
         float putTime = 0.1f;
 
         if (stateNo5 == 0)
         {
             myAnimator.SetInteger("State", 3);
-            #region 目的地リストを作る
+            // 目的地リストを作る
             //最初はplayerの位置を加える
 
-            float px = 2 * Mathf.RoundToInt((player.transform.position.x + arrayInt) / 2) - arrayInt;
-            float py = player.transform.position.y;
-            float pz = 2 * Mathf.RoundToInt((player.transform.position.z + arrayInt) / 2) - arrayInt;
+            //float px = 2 * Mathf.RoundToInt((player.transform.position.x + arrayInt) / 2) - arrayInt;
+            //float py = player.transform.position.y;
+            //float pz = 2 * Mathf.RoundToInt((player.transform.position.z + arrayInt) / 2) - arrayInt;
 
-            destinationList.Add(new Vector3(px,py,pz));
+            //destinationList.Add(new Vector3(px,py,pz));
 
-            //リストが空または最後の要素との距離が遠い限り、
-            while((destinationList[destinationList.Count-1]-transform.position).magnitude > 3)
+            //リストが空または最後の要素とplayerとの距離が遠い限り、
+            if (markList.Count == 0 || (markList[markList.Count - 1].transform.position - player.transform.position).magnitude > 0.5f)
             {
-                //Xの距離
-                float X = (destinationList[destinationList.Count - 1] - transform.position).x; 
-                //Zの距離
-                float Z = (destinationList[destinationList.Count - 1] - transform.position).z;
-
-                Vector3 dir = Vector3.zero;
-                if(Mathf.Abs(X) > Mathf.Abs(Z) && X > 0)
-                {
-                    dir = Vector3.left;
-                }
-                else if (Mathf.Abs(X) > Mathf.Abs(Z) && X <= 0)
-                {
-                    dir = Vector3.right;
-                }
-                else if (Mathf.Abs(X) <= Mathf.Abs(Z) && Z > 0)
-                {
-                    dir = Vector3.back;
-                }
-                else if (Mathf.Abs(X) <= Mathf.Abs(Z) && Z <= 0)
-                {
-                    dir = Vector3.forward;
-                }
-
-                destinationList.Add(destinationList[destinationList.Count - 1] + 2 * dir);
-
+                isPutting = true;
+            }
+            else
+            {
+                isPutting = false;
             }
 
-            #endregion
-            stateNo5 += 1;
-            markCo = 0;
-        }
-        if(stateNo5 == 1)
-        {
-            #region 目的地を置いてputTimeだけ待機(リストの要素数だけ)
-            if (count > putTime)
+            if(isPutting)
             {
-                //markを作る
-                GameObject mark = Instantiate(destinationMarkPrefab);
-                //markをlistの最初の位置に置く
-                mark.transform.position = destinationList[0];
-                //listの最初を削除→リストの最初が変わる
-                destinationList.Remove(destinationList[0]);
-                //marklistにmark追加
-                markList.Add(mark);
-                //countをリセット
-                count = 0;
-                if (destinationList.Count > 0)
+                if(count > putTime)
                 {
 
+                    #region 目的地決める
+                    Vector3 pos = transform.position;
+                    if (markList.Count != 0)
+                    {
+                        pos = markList[markList.Count - 1].transform.position;
+                    }
+
+                    //Xの距離
+                    float X = (player.transform.position - pos).x;
+                    //Zの距離
+                    float Z = (player.transform.position - pos).z;
+
+                    Vector3 dir = Vector3.zero;
+                    if (Mathf.Abs(X) > Mathf.Abs(Z) && X > 0)
+                    {
+                        dir = Vector3.right;
+                    }
+                    else if (Mathf.Abs(X) > Mathf.Abs(Z) && X <= 0)
+                    {
+                        dir = Vector3.left;
+                    }
+                    else if (Mathf.Abs(X) <= Mathf.Abs(Z) && Z > 0)
+                    {
+                        dir = Vector3.forward;
+                    }
+                    else if (Mathf.Abs(X) <= Mathf.Abs(Z) && Z <= 0)
+                    {
+                        dir = Vector3.back;
+                    }
+
+                    pos += 2 * dir;
+
+                    #endregion
+
+                    #region 置く
+                    //markを作る
+                    GameObject mark = Instantiate(destinationMarkPrefab);
+                    //markをposの位置に置く
+                    mark.transform.position = pos;
+                    //marklistにmark追加
+                    markList.Add(mark);
+                    //countをリセット
+                    count = 0;
+                    #endregion
+                    Debug.Log((pos - player.transform.position).magnitude);
                 }
                 else
                 {
-                    //向きを変える(リストの最初が直近の目的地)
-                    transform.LookAt(markList[markList.Count-1].transform);
-                    //置き終わったので次へ
-                    stateNo5 += 1;
+                    //0.1s待つ
+                    count += Time.deltaTime;
                 }
             }
             else
             {
-                count += Time.deltaTime;
+                //向きを変える(リストの最初が直近の目的地)
+                transform.LookAt(markList[0].transform);
+                //
+                count = 0;
+                //置き終わったので次へ
+                stateNo5 += 1;
             }
-            #endregion
         }
-        if(stateNo5 == 2)
+        if(stateNo5 == 1)
         {
             myAnimator.SetInteger("State", 2);
             #region
@@ -275,15 +283,15 @@ public class EnemyController2 : MonoBehaviour
                 
                 BeInCenter();
                 //リストの最後のmarkを削除
-                Destroy(markList[markList.Count - 1].gameObject);
+                Destroy(markList[0].gameObject);
 
                 //直近の目的地をリストから破棄（リストの最後）
-                markList.Remove(markList[markList.Count - 1]);
+                markList.Remove(markList[0]);
 
                 
                 if(markList.Count > 0)
                 {
-                    transform.LookAt(markList[markList.Count - 1].transform);
+                    transform.LookAt(markList[0].transform);
                 }
                 else
                 {

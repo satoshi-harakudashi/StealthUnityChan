@@ -20,6 +20,8 @@ public class EnemyController2 : MonoBehaviour
     static UnityChanController unityChanController;
     //アニメーションするためのコンポーネントを入れる
     private Animator myAnimator;
+    
+
     public List<Material> material = new List<Material>();
 
     //状態変数　0:待機、1:徘徊、2:追跡
@@ -270,7 +272,7 @@ public class EnemyController2 : MonoBehaviour
         {
             myAnimator.SetInteger("State", 2);
             #region
-            if(count < runTime)
+            if (count < runTime)
             {
                 //前進（直近の目的地へ）
                 transform.position += 2 * Time.deltaTime / runTime * transform.forward;
@@ -278,6 +280,7 @@ public class EnemyController2 : MonoBehaviour
             }
             else
             {
+
                 count = 0;
                 Debug.Log("state5:" + stateNo5 + " List:" + destinationList.Count);
                 
@@ -321,19 +324,21 @@ public class EnemyController2 : MonoBehaviour
 
     private void Posing()
     {
-        if(size >= state3To)
+        if (size >= state3To)
         {
             stateNo = 0;
             count = 0;
         }
         // アニメーションを開始
             this.myAnimator.SetInteger("State", 3);
+
         count += Time.deltaTime;
         return;
     }
 
     private void Wait()
     {
+
         //if(size > state3From && size < state3To)
         //{
         //    stateNo = 3;
@@ -372,6 +377,9 @@ public class EnemyController2 : MonoBehaviour
     {
         if(walkCount < walkBeforeWait)
         {
+
+
+
             if (count < walkTime)
             {
                 //アニメーションを開始
@@ -412,14 +420,14 @@ public class EnemyController2 : MonoBehaviour
             DirectChase();
         }
 
+
         //進行不可でない場合
-        if(stateNo == 2 )//|| stateNo == 4)
+        if (stateNo == 2 )//|| stateNo == 4)
         {
             if(count < runTime)
             {
                 //アニメーションを開始
                 this.myAnimator.SetInteger("State", 2);
-
                 transform.position += 2 * Time.deltaTime / runTime * transform.forward;
                 count += Time.deltaTime;
             }

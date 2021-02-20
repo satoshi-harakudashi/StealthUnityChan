@@ -8,7 +8,7 @@ public class WallGenerator3 : MonoBehaviour
     //壁伸ばし法http://www5d.biglobe.ne.jp/stssk/maze/make.html
     public GameObject enemyPrefab;
     private GameObject player;
-    private GameObject roof;
+    private List<GameObject> wallList = new List<GameObject>();
     public GameObject pieceOfRoof;
     public GameObject wallPrefab;
     public GameObject stairPrefab;
@@ -36,6 +36,16 @@ public class WallGenerator3 : MonoBehaviour
         floor.transform.position = new Vector3(-1, 4 * (floorNo - 1) - 1, -1);
         floor.transform.localScale = new Vector3(2 * arrayInt, 2, 2 * arrayInt);
         floor.GetComponent<Renderer>().material.mainTextureScale = new Vector2(arrayInt*0.4f, arrayInt*0.4f);
+
+        if(arrayInt > 10)
+        {
+            for(int i = 0; i < wallList.Count; i ++)
+            {
+                Destroy(wallList[0].gameObject);
+                wallList.RemoveAt(0);
+            }
+        }
+
 
         wallArray = new bool[arrayInt, arrayInt];
 
@@ -167,6 +177,7 @@ public class WallGenerator3 : MonoBehaviour
                 {
                     GameObject wall = Instantiate(wallPrefab);
                     wall.transform.position = new Vector3(2 * i - arrayInt, 4 * floorNo - 3, 2 * j - arrayInt);
+                    wallList.Add(wall);
                 }
             }
         }
@@ -250,28 +261,7 @@ public class WallGenerator3 : MonoBehaviour
         GameObject stair = Instantiate(stairPrefab);
         stair.transform.position = new Vector3(2 * stairPosX - arrayInt + 1, 4 * (floorNo - 1), 2 * stairPosZ - arrayInt - 1);
 
-        roof = GameObject.Find("Roof");
 
-        for (int i = 0; i < 20* 4; i++)
-        {
-            for (int j = 0; j < 20 * 4; j++)
-            {
-                //GameObject por = Instantiate(pieceOfRoof);
-                //por.transform.parent = roof.transform;
-                //por.transform.position = new Vector3((i - 3.75f) * 0.25f - arrayInt, 3 + 4 * (floorNo - 1), (j - 3.75f) * 0.25f - arrayInt) + player.transform.position;
-
-
-                //if (wallArray[Mathf.RoundToInt(i / 4), Mathf.RoundToInt(j / 4)])
-                //{
-                //    por.GetComponent<RoofController>().aboveWall = true;
-                //}
-                //else
-                //{
-                //    por.GetComponent<RoofController>().aboveWall = false;
-                //}
-
-            }
-        }
 
     }
 

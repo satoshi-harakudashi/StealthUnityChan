@@ -611,7 +611,7 @@ public class EnemyController2 : MonoBehaviour
             }
         }
     }
-    private void OnTriggerStay(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
         if(view == null)
         {
@@ -620,14 +620,17 @@ public class EnemyController2 : MonoBehaviour
 
         if(stateNo == 5 && other.tag == "wall" )
         {
-            
+            MeshRenderer mr = other.gameObject.GetComponent<MeshRenderer>();
 
             int X = Mathf.RoundToInt((other.transform.position.x + arrayInt) / 2);
             int Z = Mathf.RoundToInt((other.transform.position.z + arrayInt) / 2);
 
-            if(X > 0 && X < arrayInt-1 && Z > 0 && Z < arrayInt -1)
+
+
+            if(X > 0 && X < arrayInt-1 && Z > 0 && Z < arrayInt -1 && mr.enabled)
             {
-                Destroy(other.gameObject);
+                mr.enabled = false;
+                other.gameObject.GetComponent<AudioSource>().Play();
                 wallGenerator.wallArray[X, Z] = false;
             }
 
